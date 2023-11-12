@@ -6,5 +6,6 @@ export const config = {
 	APP_NAME: process.env.APP_NAME,
 	HOST: process.env.HOST,
 	PORT: process.env.PORT,
-	DB_URL: process.env.DB_URL
+	DB_URL: process.env.DB_URL,
+	JWT_SECRET: process.env.JWT_SECRET
 }

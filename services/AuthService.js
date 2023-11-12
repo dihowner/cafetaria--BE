@@ -1,18 +1,21 @@
-import User, {validateCreateUser, hashPassword} from "../models/user.js";
+import User, {validateCreateUser, validateLoginUser, hashPassword, comparePassword} from "../models/user.js";
 import reformNumber from "../utility/number.js"
+import jwt from "jsonwebtoken";
+import { config } from "../utility/config.js"
+import httpStatusCode from "http-status-codes";
 
 export const createUser = async (request, response) => {
     let payload = request.body;
     const validatePayload = validateCreateUser(payload);
-    if (validatePayload.error) return response.status(400).json({message: validatePayload.error.details[0].message});
+    if (validatePayload.error) return response.status(httpStatusCode.BAD_REQUEST).json({message: validatePayload.error.details[0].message});
 
     let emailAddress = request.body.email;
     const isEmailExist = await User.findOne({email: emailAddress })
-    if(isEmailExist) return response.status(400).json({message: `Email (${emailAddress}) already associated to a user`})
+    if(isEmailExist) return response.status(httpStatusCode.BAD_REQUEST).json({message: `Email (${emailAddress}) already associated to a user`})
 
     let clientNumber = reformNumber(payload.mobile_number);
-
-    if(clientNumber === false) return response.status(400).json({message: `Mobile number (${payload.mobile_number}) provided is invalid. Mobile number should start with leading zero (0) or 234`})
+    if(clientNumber === false) return response.status(httpStatusCode.BAD_REQUEST)
+                                        .json({message: `Mobile number (${payload.mobile_number}) provided is invalid. Mobile number should start with leading zero (0) or 234`})
 
     let userData = new User({
         name: payload.name,
@@ -24,10 +27,35 @@ export const createUser = async (request, response) => {
     
     try {
         const createUser = await userData.save();
-        return response.status(200).json({message: "User created successfully", data: createUser})
+        return response.status(httpStatusCode.OK).json({message: "User created successfully", data: createUser})
     }
     catch(error) {
-        return response.status(500).json({message: error.message});
+        return response.status(httpStatusCode.INTERNAL_SERVER_ERROR).json({message: error.message});
+    }
+};
+
+export const loginUser = async(request, response) => {
+    let payload = request.body;
+    const validatePayload = validateLoginUser(payload);
+    if(validatePayload.error) return response.status(httpStatusCode.BAD_REQUEST).json({message: validatePayload.error.details[0].message})
+
+    const user = await User.findOne({email: payload.email, roles: payload.roles})
+
+    if(user) {
+        const checkLoginPass = await comparePassword(payload.password, user.password);
+        if(!checkLoginPass) return response.status(httpStatusCode.BAD_REQUEST).json({message: "Bad combination of email address or password"})
+            
+        const token = jwt.sign({
+                _id: user._id,
+                role: user.roles,
+            },
+            config.JWT_SECRET,
+            { expiresIn: "24h" }
+        )
+        return response.status(httpStatusCode.OK).json({message: "Login successful", token: token, user });
+    }
+    else {
+        return response.status(httpStatusCode.BAD_REQUEST).json({message: "Bad combination of email address or password"})
     }
 
 };

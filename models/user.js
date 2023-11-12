@@ -25,7 +25,8 @@ export const userSchema = new mongoose.Schema({
     roles: {
         type: String,
         enum: userRoles,
-        required: true
+        required: true,
+        default: 'user'
     }
 })
 
@@ -59,9 +60,33 @@ export function validateCreateUser(request) {
     return userSchema.validate(request, {abortEarly: false});
 }
 
+export function validateLoginUser(request) {
+    const userSchema = Joi.object({
+        email: Joi.string().required().messages({
+            'string.base':'Email address must be a string',
+            'string.empty':'Email address cannot be empty',
+            'any.required':'Email address is required'
+        }),
+        password: Joi.string().required().min(5).pattern(new RegExp('^[a-zA-Z0-9]{3,30}$')).messages({
+            'string.base':'Password must be a string',
+            'string.empty':'Password cannot be empty',
+            'any.required':'Password is required'
+        }),
+        roles: Joi.string().valid(...userRoles).required()
+    });
+
+    return userSchema.validate(request, {abortEarly: false});
+}
+
 export async function hashPassword(password) {
 	const salt = await bcrypt.genSalt(10)
 	return await bcrypt.hash(password, salt)
 }
+
+export async function comparePassword(password, savedHashed) {
+    const confirmPassword = await bcrypt.compare(password, savedHashed)
+    return confirmPassword;
+}
+
 
 export default User;

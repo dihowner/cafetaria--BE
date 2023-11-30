@@ -17,12 +17,13 @@ const requireLoggedInUser = async (req, res, next) => {
 		}
 
 		const decodedToken = jwt.verify(token, config.JWT_SECRET)
+
         const user = await User.findById(decodedToken._id)
 		if (!user) {
 			return next({
 				status: "error",
 				code: 400,
-				message: "Invalid auth token",
+				message: "Invalid authorization token",
 			})
 		}
         req.user = decodedToken
@@ -30,14 +31,14 @@ const requireLoggedInUser = async (req, res, next) => {
     }
     catch(error) {
         if (error.name === "TokenExpiredError") {
-			return next({
+			return res.json({
 				status: "error",
 				code: 400,
-				message: "Auth token expired",
+				message: "Authorization token expired",
 			})
 		}
 
-		return next({
+		return res.json({
 			status: "error",
 			code: 401,
 			message: "Failed to authenticate token",

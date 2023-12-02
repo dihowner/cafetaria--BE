@@ -54,6 +54,10 @@ export function validateCreateUser(request) {
             'any.required':'Mobile number is required',
             'string.min':'Mobile number must be 11 digits',
             'string.max':'Mobile number cannot exceeds 13 digits'
+        }),
+        roles: Joi.string().messages({
+            'string.base':'Please provide user role',
+            'string.any':'Please provide user role'
         })
     });
 

@@ -5,5 +5,6 @@ const router = express.Router();
 
 router.post("/signup", AuthService.createUser);
 router.post("/signin", AuthService.loginUser);
+router.post("/passwordreset/request", AuthService.passwordRequest)
 
 export default router

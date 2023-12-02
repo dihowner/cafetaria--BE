@@ -3,6 +3,8 @@ import reformNumber from "../utility/number.js"
 import jwt from "jsonwebtoken";
 import { config } from "../utility/config.js"
 import httpStatusCode from "http-status-codes";
+// import { smtpTransporter } from '../mailer/smtp.js';
+import { smtpTransporter } from '../mailer/smtp.js';
 
 export const createUser = async (request, response) => {
     let payload = request.body;
@@ -59,3 +61,28 @@ export const loginUser = async(request, response) => {
     }
 
 };
+
+export const passwordRequest = async(request, response) => {
+
+    const mailOptions = {
+        from: {
+            name: `${config.APP_NAME.toUpperCase()}`,
+            address: config.system_mail.no_reply
+        },
+        to: 'oluwatayoadeyemi@yahoo.com',     // Receiver's email address
+        subject: `${config.APP_NAME.toUpperCase()} PASSWORD RESET REQUEST`,
+        text: 'Hello, this is a test email sent from Node.js!' // Email body
+    };
+
+    const transporter = await smtpTransporter();
+
+    transporter.sendMail(mailOptions, (error, info) => {
+        if (error) {
+            console.error('Error:', error.message);
+            return ;
+        }
+        console.log('Email sent:', info.response);
+    });
+
+    return response.status(httpStatusCode.BAD_REQUEST).json({message: 'Well received'});
+}

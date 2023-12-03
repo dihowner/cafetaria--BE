@@ -3,6 +3,7 @@ import bcrypt from 'bcrypt';
 import Joi from 'joi';
 
 const userRoles = ['user', 'vendor', 'admin'];
+const regStatus = ['pending', 'activated', 'suspended'];
 
 export const userSchema = new mongoose.Schema({
     name: {
@@ -27,7 +28,26 @@ export const userSchema = new mongoose.Schema({
         enum: userRoles,
         required: true,
         default: 'user'
+    },
+    is_verified: {
+        type: String,
+        enum: regStatus,
+        required: true,
+        default: 'pending'
+    },
+    created_at: {
+        type: Date,
+        default: Date.now
+    },
+    updated_at: {
+        type: Date,
+        default: Date.now
     }
+})
+
+userSchema.pre('findOneAndUpdate', function (next) {
+    this.set({ updated_at: new Date() });
+    next();
 })
 
 const User = mongoose.model('User', userSchema);
@@ -92,6 +112,26 @@ const updatePasswordSchema = Joi.object({
     })
 });
 
+const updatePasswordResetSchema = Joi.object({
+    token: Joi.string().length(6).pattern(/^[0-9]+$/).required().messages({
+        'string.base':'Verification token must be a string',
+        'any.required':'Verification token is required',
+        'string.length':'Verification token must be 6 digits',
+        'string.pattern.base':'Only numeric digit is allowed'
+    }),
+    new_password: Joi.string().required().min(5).pattern(new RegExp('^[a-zA-Z0-9]{3,30}$')).messages({
+        'string.base':'New password must be a string',
+        'string.empty':'New password cannot be empty',
+        'any.required':'New password is required'
+    }),
+    confirm_password: Joi.string().required().min(5).pattern(new RegExp('^[a-zA-Z0-9]{3,30}$')).valid(Joi.ref('new_password')).messages({
+        'string.base':'Confirm password must be a string',
+        'string.empty':'Confirm password cannot be empty',
+        'any.required':'Confirm password is required',
+        'any.only':'Passwords do not match'
+    })
+});
+
 export function validateLoginUser(request) {
     const userSchema = Joi.object({
         email: Joi.string().required().messages({
@@ -115,6 +155,9 @@ export function validateUpdateUser(activity, updateData) {
     switch(activity) {
         case 'update_password':
             updateSchema = updatePasswordSchema;
+        break;
+        case 'password_reset':
+            updateSchema = updatePasswordResetSchema;
         break;
     }
 

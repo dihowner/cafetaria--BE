@@ -14,5 +14,7 @@ export const config = {
   APP_LOGO: "https://jamborow.co.uk/img/front/Logo.png",
   system_mail: {
     no_reply: 'no-reply@cafetaria.ng'
-  }
+  },
+  OTP_EXPIRY_TIME:10, //Minutes
+  SOCIAL_MEDIA_HANDLE: 'peaksystemsng'
 };

@@ -5,7 +5,7 @@ dotenv.config({ path: `.env.${env}` });
 export const config = {
   APP_NAME: process.env.APP_NAME,
   URL: `http://${process.env.HOST}:${process.env.PORT}`,
-  FLW_CALLBACK_URL: `http://${process.env.HOST}/api/wallet/verify-payment`,
+  FLW_CALLBACK_URL: `https://cafeteria-ekep.onrender.com/api/wallet/verify-payment`,
   // FLW_CALLBACK_URL: `http://${process.env.HOST}:${process.env.PORT}/api/wallet/verify-payment`,
   HOST: process.env.HOST,
   PORT: process.env.PORT,

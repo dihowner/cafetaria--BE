@@ -47,7 +47,13 @@ export const fundWallet = async (request, response) => {
 
     try {
         const createWallet = await walletData.save();
-        return response.status(httpStatusCode.OK).json({message: "Wallet request initiated successfully", data: createWallet, payment_link: reservePayment.data.link})
+        return response.status(httpStatusCode.OK).json({message: "Wallet request initiated successfully", data: {
+            _id: createWallet._id,
+            user_id: createWallet.user_id,
+            reference: createWallet.reference,
+            amount: createWallet.amount,
+            status: createWallet.status
+        }, payment_link: reservePayment.data.link})
     }
     catch(error) {
         return response.status(httpStatusCode.INTERNAL_SERVER_ERROR).json({message: error.message});

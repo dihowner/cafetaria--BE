@@ -30,7 +30,7 @@ export const modifyPassword = async (request, response) => {
     
         const updateUser = await User.findByIdAndUpdate(userId, {
           $set: { password: await hashPassword(payload.new_password) }
-        }, {new: true});
+        }, {new: true, select: ('name email is_verified')});
 
         if(updateUser) return response.status(httpStatusCode.OK).json({message: "Password modified successfully", updateUser});
 

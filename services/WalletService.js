@@ -73,7 +73,13 @@ export const verifyPayment = async (request, response) => {
     const finalizePayment = await updateWalletIn(responseQuery.tx_ref, responseQuery.status, paymentObject)
 
     if(finalizePayment.status === true) {
-        return response.status(httpStatusCode.OK).json({message: finalizePayment.message, data: finalizePayment.data})
+        return response.status(httpStatusCode.OK).json({message: finalizePayment.message, data: {
+            _id: finalizePayment.data._id,
+            user_id: finalizePayment.data.user_id,
+            reference: finalizePayment.data.reference,
+            amount: finalizePayment.data.amount,
+            status: finalizePayment.data.status,
+        }})
     }
     else {
         let error_code = finalizePayment.error_code == 400 ? httpStatusCode.BAD_REQUEST : httpStatusCode.NOT_FOUND;
@@ -103,7 +109,13 @@ const cancelPayment = async (transactionId) => {
 
     const updatePayment = await WalletIn.findByIdAndUpdate(getPayment._id, { $set: {status: 'cancelled'} }, {new: true});
     if (!updatePayment)  return {status: false, error_code: 400, message: 'Error updating transaction'}
-    return {status: true, message: 'Payment cancelled successfully', data: updatePayment};
+    return {status: true, message: 'Payment cancelled successfully', data: {
+        _id: updatePayment._id,
+        user_id: updatePayment.user_id,
+        reference: updatePayment.reference,
+        amount: updatePayment.amount,
+        status: updatePayment.status,
+    }};
 }
 
 const verifyTransaction = async (transactionId, paymentObject = {}) => {

@@ -32,7 +32,12 @@ export const modifyPassword = async (request, response) => {
           $set: { password: await hashPassword(payload.new_password) }
         }, {new: true, select: ('name email is_verified')});
 
-        if(updateUser) return response.status(httpStatusCode.OK).json({message: "Password modified successfully", updateUser});
+        if(updateUser) return response.status(httpStatusCode.OK).json({message: "Password modified successfully", data: {
+              id: updateUser._id,
+              name: updateUser.name,
+              email: updateUser.email,
+              is_verified: updateUser.is_verified,
+        }});
 
         return response.status(httpStatusCode.BAD_REQUEST).json({message: 'Request failed. Please retry'})
 

@@ -4,7 +4,7 @@ import { getAvailableBalance } from "../services/WalletService.js";
 import httpStatusCode from "http-status-codes";
 
 export const userStatistics = async (request, response) => {
-    const user = await User.findById(request.params.userId);
+    const user = await User.findById(request.params.userId)
     if (!user) return response.status(httpStatusCode.BAD_REQUEST).json({message: 'User could not be found'})
     const data = {
       wallet_balance: await getAvailableBalance(user._id),

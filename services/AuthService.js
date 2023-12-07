@@ -41,7 +41,12 @@ export const createUser = async (request, response) => {
             email: payload.email,
             password: await hashPassword(payload.password),
             mobile_number: reformNumber(payload.mobile_number),
-            roles: payload.roles == undefined ? "user" : payload.roles
+            roles: payload.roles == undefined ? "user" : payload.roles,
+            vendor_store: (payload.roles === 'vendor' ? {
+                store_name: payload.store_name,
+                isPhysicalStore: payload.isPhysicalStore,
+                store_address: (payload.isPhysicalStore) ? payload.store_address : undefined
+            } : {}),
         })
 
         try {
@@ -77,7 +82,8 @@ export const createUser = async (request, response) => {
                 
                 return response.status(httpStatusCode.OK).json({message: "Your registration was successful. Kindly verify your email address to proceed", data: {
                     name: payload.name,
-                    email: payload.email
+                    email: payload.email,
+                    role: payload.roles
                 }})
             }); 
         }

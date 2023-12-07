@@ -29,6 +29,9 @@ export const userSchema = new mongoose.Schema({
         required: true,
         default: 'user'
     },
+    vendor_store: {
+        type: Object
+    },
     is_verified: {
         type: String,
         enum: regStatus,
@@ -52,37 +55,71 @@ userSchema.pre('findOneAndUpdate', function (next) {
 
 const User = mongoose.model('User', userSchema);
 
-export function validateCreateUser(request) {
-    const userSchema = Joi.object({
-        name: Joi.string().required().messages({
-            'string.base':'Name must be a string',
-            'string.empty':'Name cannot be empty',
-            'any.required':'Name is required'
-        }),
-        email: Joi.string().required().messages({
-            'string.base':'Email address must be a string',
-            'string.empty':'Email address cannot be empty',
-            'any.required':'Email address is required'
-        }),
-        password: Joi.string().required().min(5).pattern(new RegExp('^[a-zA-Z0-9]{3,30}$')).messages({
-            'string.base':'Password must be a string',
-            'string.empty':'Password cannot be empty',
-            'any.required':'Password is required'
-        }),
-        mobile_number: Joi.string().required().min(11).max(13).messages({
-            'string.base':'Mobile number must be a number',
-            'any.required':'Mobile number is required',
-            'string.min':'Mobile number must be 11 digits',
-            'string.max':'Mobile number cannot exceeds 13 digits'
-        }),
-        roles: Joi.string().messages({
-            'string.base':'Please provide user role',
-            'string.any':'Please provide user role'
-        })
-    });
+const regSchema = Joi.object({
+    name: Joi.string().required().messages({
+        'string.base':'Name must be a string',
+        'string.empty':'Name cannot be empty',
+        'any.required':'Name is required'
+    }),
+    email: Joi.string().required().messages({
+        'string.base':'Email address must be a string',
+        'string.empty':'Email address cannot be empty',
+        'any.required':'Email address is required'
+    }),
+    password: Joi.string().required().min(5).pattern(new RegExp('^[a-zA-Z0-9]{3,30}$')).messages({
+        'string.base':'Password must be a string',
+        'string.empty':'Password cannot be empty',
+        'any.required':'Password is required'
+    }),
+    mobile_number: Joi.string().required().min(11).max(13).messages({
+        'string.base':'Mobile number must be a number',
+        'any.required':'Mobile number is required',
+        'string.min':'Mobile number must be 11 digits',
+        'string.max':'Mobile number cannot exceeds 13 digits'
+    }),
+    roles: Joi.string().messages({
+        'string.base':'Please provide user role',
+        'string.any':'Please provide user role'
+    })
+});
 
+const vendorRegSchema = regSchema.keys({
+    store_name: Joi.string().required().messages({
+        'string.base':'Store name must be a string',
+        'string.empty':'Store name cannot be empty',
+        'any.required':'Store name is required'
+    }),
+    store_address: Joi.string().when('isPhysicalStore', {
+        is: true,
+        then: Joi.string().required().messages({
+          'any.required': 'Store address is required when physical store is true.',
+        }),
+        otherwise: Joi.string(), // No validation if isPhysicalStore is false
+    }),
+    isPhysicalStore: Joi.boolean().required().messages({
+        'boolean.base':'Physical store must be a boolean value',
+        'boolean.empty':'Please indicate if you have a physical store or not',
+        'any.required':'Please indicate if you have a physical store or not'
+    })
+});
+
+export function validateCreateUser(request) {
+    let userRole = request.roles;
+    let userSchema;
+
+    switch(userRole) {
+        case 'user':
+        case 'admin':
+            userSchema = regSchema;
+        break;
+
+        case 'vendor':
+            userSchema = vendorRegSchema;
+        break;
+    }
     return userSchema.validate(request, {abortEarly: false});
 }
+
 
 const checkOldNewPass = (value, helpers) => {
     // const getAllPayload = JSON.stringify(helpers.state.ancestors);

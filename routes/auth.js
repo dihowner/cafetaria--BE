@@ -1,13 +1,15 @@
 import express from "express"
-import * as AuthService from "../services/AuthService.js";
+import AuthController from "../controllers/AuthController.js";
+import UserController from "../controllers/UserController.js";
+import ValidatorMiddleware from "../middleware/validator.js";
 
 const router = express.Router();
 
-router.post("/signup", AuthService.createUser);
-router.post("/verify/account", AuthService.verifyUserAccount);
-router.post("/signin", AuthService.loginUser);
-router.post("/passwordreset/request", AuthService.passwordRequest)
-router.post("/passwordreset/verify", AuthService.verifyResetPasswordToken)
-router.put("/passwordreset/change-password", AuthService.changePassword)
+router.post("/signup", ValidatorMiddleware.validateRequest(AuthController.validateCreateUser), AuthController.createUser);
+router.post("/verify/account", ValidatorMiddleware.validateRequest(AuthController.validateVerifyToken), AuthController.verifyUserAccount);
+router.post("/signin", ValidatorMiddleware.validateRequest(AuthController.validateLoginUser), AuthController.signIn);
+router.post("/passwordreset/request", ValidatorMiddleware.validateRequest(AuthController.validatePasswordRequest), AuthController.passwordRequest)
+router.post("/passwordreset/verify", ValidatorMiddleware.validateRequest(AuthController.validateVerifyReset), AuthController.verifyResetPasswordToken)
+router.put("/passwordreset/change-password", ValidatorMiddleware.validateRequestActivity('password_reset', UserController.validateUpdateUser), AuthController.changePassword)
 
 export default router

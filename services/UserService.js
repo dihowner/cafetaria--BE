@@ -1,48 +1,63 @@
-import User, {validateUpdateUser, hashPassword, comparePassword} from "../models/user.js";
-import { getAvailableBalance } from "../services/WalletService.js";
+import WalletService from "./WalletService.js";
+import jwt from "jsonwebtoken";
+import bcrypt from 'bcrypt'
+import { config } from "../utility/config.js"
+import User from "../models/user.js";
+import { BadRequestError, UnAuthorizedError } from "../helpers/errorHandler.js";
 
-import httpStatusCode from "http-status-codes";
+export default class UserService {
+    static model = User;
+    static async generateAuthToken(user) {
+        return jwt.sign({
+                _id: user._id,
+                role: user.roles,
+            },
+            config.JWT_SECRET, { expiresIn: "24h" }
+        );
+    }
 
-export const userStatistics = async (request, response) => {
-    const user = await User.findById(request.params.userId)
-    if (!user) return response.status(httpStatusCode.BAD_REQUEST).json({message: 'User could not be found'})
-    const data = {
-      wallet_balance: await getAvailableBalance(user._id),
-      total_cart: Math.round(102 * Math.random()),
-      total_order_progress: Math.round(109 * Math.random()),
-      total_order_received: Math.round(105 * Math.random()),
+    static async userStatistics(userId) {
+        const user = await this.getOne({_id: userId, roles: 'user'})
+        if (!user) throw new UnAuthorizedError()
+        return {
+          wallet_balance: await WalletService.getAvailableBalance(userId),
+          total_cart: Math.round(102 * Math.random()),
+          total_order_progress: Math.round(109 * Math.random()),
+          total_order_received: Math.round(105 * Math.random()),
+        }
     };
-    return response.status(httpStatusCode.OK).json(data);
-};
 
-export const modifyPassword = async (request, response) => {
-    try {
-        const userId = request.user._id;
-        const getUser = await User.findById(userId);
-        let payload = request.body;
-        const validatePayload = validateUpdateUser('update_password', payload);
-    
-        if(validatePayload.error) return response.status(httpStatusCode.BAD_REQUEST).json({message: validatePayload.error.details[0].message})
-    
-        const checkCurrentPass = await comparePassword(payload.current_password, getUser.password);
-    
-        if(!checkCurrentPass) return response.status(httpStatusCode.BAD_REQUEST).json({message: `Invalid current password (${payload.current_password}) supplied`})
-    
-        const updateUser = await User.findByIdAndUpdate(userId, {
-          $set: { password: await hashPassword(payload.new_password) }
-        }, {new: true, select: ('name email is_verified')});
-
-        if(updateUser) return response.status(httpStatusCode.OK).json({message: "Password modified successfully", data: {
-              id: updateUser._id,
-              name: updateUser.name,
-              email: updateUser.email,
-              is_verified: updateUser.is_verified,
-        }});
-
-        return response.status(httpStatusCode.BAD_REQUEST).json({message: 'Request failed. Please retry'})
-
+    static async modifyPassword(userId, currentPassword, newPassword) {
+        const user  = await this.getOne({_id: userId})
+        if (!user) throw new UnAuthorizedError()
+        const isValidCurrentPassword = await this.comparePassword(currentPassword, user.password)
+        if (!isValidCurrentPassword) throw new BadRequestError('Invalid current password supplied')
+        const updatePassword = await this.updateUser(userId, { password: await this.hashPassword(newPassword) });
+        if (!updatePassword) throw new BadRequestError("Password could not be updated. Please try again later")
+        return {
+            message: "Password reset was successful",
+            data: updatePassword
+        }
     }
-    catch(error) {
-        return response.status(httpStatusCode.INTERNAL_SERVER_ERROR).json({message: error.message})
+    
+    static async getOne(filterQuery) {
+        const user = await this.model.findOne(filterQuery)
+        return user || null;
     }
-};
+
+    static async updateUser(userId, updateData, filterQuery = 'name email') {
+        const updateUser = await this.model.findByIdAndUpdate(userId, { $set: updateData }, { new: true, select: filterQuery });
+        if(!updateUser) return false;
+        return updateUser;
+    }
+    
+    static async comparePassword(password, savedHashed) {
+        return await bcrypt.compare(password, savedHashed)
+    }
+
+    static async hashPassword(password) {
+        const salt = await bcrypt.genSalt(10)
+        return await bcrypt.hash(password, salt)
+    }
+
+}

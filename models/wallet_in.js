@@ -54,17 +54,6 @@ walletInSchema.pre('findOneAndUpdate', function (next) {
 
 const WalletIn = mongoose.model('WalletIn', walletInSchema);
 
-export function validateFundingRequest(request) {
-    const walletInSchema = Joi.object({
-        amount: Joi.number().required().min(1).messages({
-            'any.required':'Amount is required',
-            'any.min':'Funding amount must be greater than zero'
-        })
-    });
-
-    return walletInSchema.validate(request, {abortEarly: false});
-}
-
 export function validateWalletUpdate(updateData) {
     const updateWalletSchema = Joi.object({
         status: Joi.string().required().messages({

@@ -35,16 +35,4 @@ verifyRegSchema.pre('findOneAndUpdate', function (next) {
 
 const VerifyRegistration = mongoose.model('VerifyRegistration', verifyRegSchema);
 
-export function validateVerifyToken(request) {
-    const verifySchema = Joi.object({
-        token: Joi.string().length(6).pattern(/^[0-9]+$/).required().messages({
-            'string.base':'Verification token must be a string',
-            'any.required':'Verification token is required',
-            'string.length':'Verification token must be 6 digits',
-            'string.pattern.base':'Only numeric digit is allowed'
-        })
-    })
-    return verifySchema.validate(request, {abortEarly: false});
-}
-
 export default VerifyRegistration;

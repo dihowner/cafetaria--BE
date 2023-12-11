@@ -18,10 +18,7 @@ export function generateRandomNumber(length = 6) {
   const min = 10 ** (length - 1);
   const max = (10 ** length) - 1;
 
-  let randomNumber;
-  for(let i = 1; i <= 500; i++) {
-      randomNumber = Math.floor(Math.random() * (max - min + 1)) + min;
-  }
-  
+  let randomNumber = Math.floor(Math.random() * (max - min + 1)) + min;
+
   return randomNumber;
 }

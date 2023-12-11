@@ -9,11 +9,10 @@ import UserService from "./UserService.js";
 import { readFile } from "../helpers/fileReader.js";
 import { sendEmail } from "../helpers/sendEmail.js";
 
-let uniqueToken = generateRandomNumber(6);
-
 // Get the current time
 const currentTime = new Date();
 const expiringTime = config.OTP_EXPIRY_TIME
+let uniqueToken;
 
 export default class AuthService {
 
@@ -42,6 +41,7 @@ export default class AuthService {
             })
             const createUser = await userData.save();
             if(!createUser) throw new BadRequestError("User creation failed. Please try again later.")
+            uniqueToken = generateRandomNumber(6);
 
             // Save the verify token
             let verifyRegData = new VerifyRegistration({
@@ -146,6 +146,7 @@ export default class AuthService {
             // Calculate the difference in milliseconds
             const timeDifferenceMs =  Math.floor((currentTime - pastTime) / (1000 * 60));
             if(timeDifferenceMs >= expiringTime) {
+                uniqueToken = generateRandomNumber(6)
                 await ResetPassword.findByIdAndUpdate(isNewReset._id, { $set: {'status':'expired'} }, {new: true});
                 await this.saveNewToken(uniqueToken, userId)
             }
@@ -154,6 +155,7 @@ export default class AuthService {
             }
         }
         else {
+            uniqueToken = generateRandomNumber(6)
             await this.saveNewToken(uniqueToken, userId)
         }
 

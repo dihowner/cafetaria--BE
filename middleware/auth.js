@@ -20,9 +20,9 @@ const requireLoggedInUser = async (req, res, next) => {
 
         const user = await User.findById(decodedToken._id)
 		if (!user) {
-			return next({
+			return res.status(httpStatusCode.BAD_REQUEST).json({
 				status: "error",
-				code: 400,
+				code: httpStatusCode.BAD_REQUEST,
 				message: "Invalid authorization token",
 			})
 		}
@@ -31,14 +31,14 @@ const requireLoggedInUser = async (req, res, next) => {
     }
     catch(error) {
         if (error.name === "TokenExpiredError") {
-			return res.json({
+			return res.status(httpStatusCode.BAD_REQUEST).json({
 				status: "error",
-				code: 400,
+				code: httpStatusCode.BAD_REQUEST,
 				message: "Authorization token expired",
 			})
 		}
 
-		return res.json({
+		return res.status(httpStatusCode.UNAUTHORIZED).json({
 			status: "error",
 			code: 401,
 			message: "Failed to authenticate token",

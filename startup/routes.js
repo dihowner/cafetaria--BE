@@ -6,6 +6,8 @@ import httpStatusCode from "http-status-codes";
 import AuthRoute from "../routes/auth.js";
 import UserRoute from "../routes/user.js";
 import WalletRoute from "../routes/wallet.js";
+import MealRoute from "../routes/meal.js";
+import VendorRoute from "../routes/vendor.js";
 
 const routeApp = function (app) {
 	app.use(bodyParser.json())
@@ -15,6 +17,8 @@ const routeApp = function (app) {
     app.use("/api/auth/", AuthRoute);
     app.use("/api/user/", UserRoute);
     app.use("/api/wallet/", WalletRoute);
+    app.use("/api/meals/", MealRoute);
+    app.use("/api/vendor/", VendorRoute);
 
 	app.all("*", (request, response) => {
 		return response.status(httpStatusCode.NOT_FOUND).json({

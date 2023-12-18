@@ -1,6 +1,7 @@
 import _ from 'lodash';
 import { isValidObjectId } from 'mongoose';
 import { BadRequestError } from '../helpers/errorHandler.js';
+import filesystem from "fs"
 
 export default class ValidatorMiddleware {
 	static validateRequest = (validator) => {
@@ -14,6 +15,10 @@ export default class ValidatorMiddleware {
                 req.body = value;
                 next();
             } catch (error) {
+				// If file was uploaded and we have a JOI Validation error, we need to remove ASAP
+				if (error && req.file) {
+					filesystem.unlinkSync(req.file.path);
+				}
                 return res.status(error.status).json({message: error.message}); // Handle the rejected promise here
             }
 		};
@@ -32,6 +37,10 @@ export default class ValidatorMiddleware {
                 req.body = value;
                 next();
             } catch (error) {
+				// If file was uploaded and we have a JOI Validation error, we need to remove ASAP
+				if (error && req.file) {
+					filesystem.unlinkSync(req.file.path);
+				}
                 return res.status(error.status).json({message: error.message}); // Handle the rejected promise here
             }
 		};

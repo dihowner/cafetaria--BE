@@ -1,4 +1,5 @@
 import User from "../models/user.js";
+import Vendors from "../models/vendor.js";
 import ResetPassword from "../models/reset_password.js";
 import VerifyRegistration from "../models/verify-reg.js";
 import reformNumber from "../utility/number.js"
@@ -16,7 +17,7 @@ let uniqueToken;
 
 export default class AuthService {
 
-    static async createUser(name, email, mobile_number, password, userRole, vendorData) {
+    static async createUser(name, email, mobile_number, password, userRole, vendorProps) {
         try{
             const fileContent = await readFile("mailer/templates/verify-registration.html")
             
@@ -32,15 +33,21 @@ export default class AuthService {
                 email: email,
                 password: await UserService.hashPassword(password),
                 mobile_number: reformNumber(mobile_number),
-                roles: userRole == undefined ? "user" : userRole,
-                vendor_store: (userRole === 'vendor' ? {
-                    store_name: vendorData.store_name,
-                    isPhysicalStore: vendorData.isPhysicalStore,
-                    store_address: (vendorData.isPhysicalStore) ? vendorData.store_address : undefined
-                } : {}),
+                roles: userRole == undefined ? "user" : userRole
             })
             const createUser = await userData.save();
             if(!createUser) throw new BadRequestError("User creation failed. Please try again later.")
+
+            if (createUser && userRole === 'vendor') {
+                let vendorData = new Vendors({
+                    user: createUser._id,
+                    store_name: vendorProps.store_name,
+                    isPhysicalStore: vendorProps.isPhysicalStore,
+                    store_address: (vendorProps.isPhysicalStore) ? vendorProps.store_address : undefined
+                });
+                await vendorData.save();
+            }
+
             uniqueToken = generateRandomNumber(6);
 
             // Save the verify token

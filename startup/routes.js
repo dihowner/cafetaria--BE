@@ -8,6 +8,7 @@ import UserRoute from "../routes/user.js";
 import WalletRoute from "../routes/wallet.js";
 import MealRoute from "../routes/meal.js";
 import VendorRoute from "../routes/vendor.js";
+import TrashRoute from "../routes/trash.js";
 
 const routeApp = function (app) {
 	app.use(bodyParser.json())
@@ -19,6 +20,7 @@ const routeApp = function (app) {
     app.use("/api/wallet/", WalletRoute);
     app.use("/api/meals/", MealRoute);
     app.use("/api/vendor/", VendorRoute);
+    app.use("/api/trash/", TrashRoute);
 
 	app.all("*", (request, response) => {
 		return response.status(httpStatusCode.NOT_FOUND).json({

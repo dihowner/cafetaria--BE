@@ -17,6 +17,14 @@ export const vendorSchema = new mongoose.Schema({
             return this.isPhysicalStore === true;
         }
     },
+    store_address: {
+        type: String,
+        required: true
+    },
+    store_image: {
+        type: String,
+        required: true
+    },
     created_at: {
         type: Date,
         default: Date.now

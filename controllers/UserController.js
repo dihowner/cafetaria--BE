@@ -45,6 +45,25 @@ export default class UserController {
         }
     }
 
+    static async updateProfile(request , response) {
+        try {
+            const userData = request.body;
+            userData.storeImage = request.file;
+            const user = request.user;
+            const updateProfile = await UserService.updateProfile(user._id, userData)
+            return response.status(httpStatusCode.OK).json(updateProfile)
+        } catch(error) {
+            // Handle the specific error types
+            if (error instanceof UnAuthorizedError) {
+                return response.status(httpStatusCode.UNAUTHORIZED).json({ message: error.message });
+            } else {
+                // Handle other errors or rethrow them
+                // throw new BadRequestError('Something went wrong');
+                return response.status(httpStatusCode.BAD_REQUEST).json({ message: error.message })
+            }
+        }
+    }
+
     /** Schema Validations **/    
 
     static checkOldNewPass = (value, helpers) => {
@@ -94,6 +113,25 @@ export default class UserController {
         })
     });
 
+    static updateProfileSchema = Joi.object({
+        name: Joi.string(),
+        mobile_number: Joi.string().min(11).max(13),
+        store_name: Joi.string(),
+        store_address: Joi.string().when('isPhysicalStore', {
+            is: true,
+            then: Joi.string().required().messages({
+              'any.required': 'Store address is required when physical store is true.',
+            }),
+            otherwise: Joi.string(), // No validation if isPhysicalStore is false
+        }),
+        isPhysicalStore: Joi.boolean().messages({
+            'boolean.base':'Physical store must be a boolean value',
+            'boolean.empty':'Please indicate if you have a physical store or not',
+            'any.required':'Please indicate if you have a physical store or not'
+        }),
+        storeImage: Joi.string()
+    })
+
     static validateUpdateUser(request) {
         let payload = request.body;
         let updateSchema;
@@ -102,6 +140,9 @@ export default class UserController {
         switch(activity) {
             case 'update_password':
                 updateSchema = UserController.updatePasswordSchema;
+            break;
+            case 'update_profile':
+                updateSchema = UserController.updateProfileSchema;
             break;
             case 'password_reset':
                 updateSchema = UserController.updatePasswordResetSchema;

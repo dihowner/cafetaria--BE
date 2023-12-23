@@ -4,6 +4,9 @@ import bcrypt from 'bcrypt'
 import { config } from "../utility/config.js"
 import User from "../models/user.js";
 import { BadRequestError, UnAuthorizedError } from "../helpers/errorHandler.js";
+import reformNumber from "../utility/number.js"
+import Vendors from "../models/vendor.js";
+import VendorService from "./VendorService.js";
 
 export default class UserService {
     static model = User;
@@ -40,6 +43,64 @@ export default class UserService {
         }
     }
     
+    static async updateProfile(userId, userProperties) {
+        try {
+            const user = await this.getOne({_id: userId, roles: {$in:['user', 'vendor']}})
+            if (!user) throw new UnAuthorizedError();
+            
+            const {
+                name, mobile_number, store_name, isPhysicalStore, store_address, storeImage
+            } = userProperties;
+
+            const reformattedMobileNumber = mobile_number !== undefined ? reformNumber(mobile_number) : user.mobile_number;
+            // const reformattedMobileNumber = (mobile_number);
+            // does email belongs to another user
+            const isMobileExist = await this.getOne({_id: {$ne: userId}, mobile_number: reformattedMobileNumber})
+            if (isMobileExist) throw new BadRequestError(`Mobile number (${reformattedMobileNumber}) already belongs to another user`)
+            
+            const updateUserData = {
+                name: name ?? user.name, 
+                mobile_number: reformattedMobileNumber ?? user.mobile_number
+            }
+            let updateVendor;
+            if (user.roles == 'vendor') {
+                // store name belongs to another store ?
+                const isStoreNameExist = await VendorService.getOne({user: {$ne: userId}, store_name: store_name});
+                if (isStoreNameExist) throw new BadRequestError(`Store name (${store_name}) already in use by another vendor`)
+                // find vendor based on user id
+                const vendor = await VendorService.getOne({user: userId});
+                // Assign store name here for vendor...
+                const vendorData = {
+                    store_name: store_name ?? vendor.store_name,
+                    isPhysicalStore: isPhysicalStore ?? vendor.isPhysicalStore,
+                    store_address: (isPhysicalStore) ? store_address : vendor.store_address
+                }
+                
+                if (storeImage) {
+                    let imagePath = storeImage.path;
+                    vendorData.store_image = imagePath
+                } else {
+                    vendorData.store_image = vendor.store_image            
+                }
+                updateVendor = await Vendors.findByIdAndUpdate(vendor._id, { $set: vendorData }, {new: true, select: 'store_name store_address isPhysicalStore'})
+            }
+            
+            const updateUserProfile = await this.updateUser(userId, updateUserData)
+
+            if (!updateUserProfile) throw new BadRequestError('Error updating profile')
+            const response = {
+                _id: updateUserProfile._id,
+                name: updateUserProfile.name,
+                email: updateUserProfile.email,
+                vendor: user.roles == 'vendor' ? updateVendor : {} 
+            };
+        
+            return response;
+        } catch (error) {
+            throw error;
+        }
+    }
+
     static async getOne(filterQuery) {
         const user = await this.model.findOne(filterQuery)
         return user || null;

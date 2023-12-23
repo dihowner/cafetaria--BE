@@ -2,7 +2,6 @@ import express from "express";
 import AuthMiddleware from "../middleware/auth.js";
 import ValidatorMiddleware from "../middleware/validator.js";
 import MealController from "../controllers/MealController.js";
-import multer from "multer";
 import UploadMiddleware from '../middleware/upload.js'
 
 const router = express.Router();

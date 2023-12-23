@@ -74,9 +74,3 @@ export default class AuthMiddleWare {
 		}
 	}
 }
-
-// const authenticateUserType = (userType) => {
-// 	console.log(userType);
-// }
-
-// export { requireLoggedInUser, authenticateUserType }

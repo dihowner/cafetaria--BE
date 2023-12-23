@@ -1,7 +1,7 @@
 import multer from "multer";
 import httpStatusCode from 'http-status-codes'
 import path from 'path';
-import { BadRequestError } from "../helpers/errorHandler.js";
+import filesystem from 'fs'
 
 export default class UploadMiddleware {
     static allowedExension = {
@@ -11,6 +11,10 @@ export default class UploadMiddleware {
     static allowedFileSize = 5 * 1024 * 1024;
 
     static fileUploader = (fieldName, destination = 'uploads', fileType) => {
+        // Create the destination folder if it doesn't exist
+        if (!filesystem.existsSync(destination)) {
+            filesystem.mkdirSync(destination);
+        }
         const storage = multer.diskStorage({
             destination: function (request, file, cb) {
                 cb(null, destination);

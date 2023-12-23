@@ -2,4 +2,3 @@ node_modules/
 logs/
 .env.development
 .env.production
-uploads/

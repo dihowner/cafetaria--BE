@@ -21,8 +21,7 @@ export default class UserController {
             if (error instanceof UnAuthorizedError) {
                 return response.status(httpStatusCode.UNAUTHORIZED).json({ message: error.message });
             } else {
-                // Handle other errors or rethrow them
-                // throw new BadRequestError('Something went wrong');
+                // Handle errors
                 return response.status(httpStatusCode.BAD_REQUEST).json({ message: error.message })
             }
         }
@@ -38,8 +37,7 @@ export default class UserController {
             if (error instanceof UnAuthorizedError) {
                 return response.status(httpStatusCode.UNAUTHORIZED).json({ message: error.message });
             } else {
-                // Handle other errors or rethrow them
-                // throw new BadRequestError('Something went wrong');
+                // Handle errors
                 return response.status(httpStatusCode.BAD_REQUEST).json({ message: error.message })
             }
         }
@@ -57,8 +55,26 @@ export default class UserController {
             if (error instanceof UnAuthorizedError) {
                 return response.status(httpStatusCode.UNAUTHORIZED).json({ message: error.message });
             } else {
-                // Handle other errors or rethrow them
-                // throw new BadRequestError('Something went wrong');
+                // Handle errors
+                return response.status(httpStatusCode.BAD_REQUEST).json({ message: error.message })
+            }
+        }
+    }
+
+    static async modifyTxPin(request , response) {
+        try {
+            const userData = request.body;
+            
+            const user = request.user;
+            const updateTxPin = await UserService.modifyTxPin(user._id, userData)
+            return response.status(httpStatusCode.OK).json(updateTxPin)
+            
+        } catch(error) {
+            // Handle the specific error types
+            if (error instanceof UnAuthorizedError) {
+                return response.status(httpStatusCode.UNAUTHORIZED).json({ message: error.message });
+            } else {
+                // Handle errors
                 return response.status(httpStatusCode.BAD_REQUEST).json({ message: error.message })
             }
         }
@@ -132,6 +148,32 @@ export default class UserController {
         storeImage: Joi.string()
     })
 
+    static updateTxPinSchema = Joi.object({
+        current_pin: Joi.string().required().pattern(/^[0-9]+$/).min(6).max(6).messages({
+            'string.base':'Current pin must be a number',
+            'any.required':'Current pin is required',
+            'string.min':'Current pin must be 6 digits',
+            'string.max':'Current pin cannot exceeds 6 digits',
+            'string.pattern.base':'Only numeric value is allowed'
+        }),
+        new_pin: Joi.string().required().min(6).max(6).invalid('000000').pattern(/^[0-9]+$/).messages({
+            'string.base':'New pin must be a number',
+            'any.required':'New pin is required',
+            'string.min':'New pin must be 6 digits',
+            'string.max':'New pin cannot exceeds 6 digits',
+            'any.invalid': 'New pin cannot be "000000"',
+            'string.pattern.base':'Only numeric value is allowed'
+        }),
+        confirm_pin: Joi.string().required().min(6).max(6).valid(Joi.ref('new_pin')).pattern(/^[0-9]+$/).messages({
+            'string.base':'Confirm pin must be a number',
+            'any.required':'Confirm pin is required',
+            'string.min':'Confirm pin must be 6 digits',
+            'string.max':'Confirm pin cannot exceeds 6 digits',
+            'any.only':'Passwords do not match',
+            'string.pattern.base':'Only numeric value is allowed'
+        }),
+    })
+
     static validateUpdateUser(request) {
         let payload = request.body;
         let updateSchema;
@@ -143,6 +185,9 @@ export default class UserController {
             break;
             case 'update_profile':
                 updateSchema = UserController.updateProfileSchema;
+            break;
+            case 'update_tx_pin':
+                updateSchema = UserController.updateTxPinSchema;
             break;
             case 'password_reset':
                 updateSchema = UserController.updatePasswordResetSchema;

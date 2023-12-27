@@ -31,6 +31,16 @@ class FlutterwaveService {
             return {error: error.message};
         }
     }
+
+    fetchAllBanks = async() => {
+        try {
+            const verifyPayment = await httpRequest.get(`${this.BASE_URL}/banks/NG`, '', this.header )
+            return verifyPayment;
+        }
+        catch(error) {
+            return {error: error.message};
+        }
+    }
 }
 
 export default new FlutterwaveService(config.FLW_SECRET);

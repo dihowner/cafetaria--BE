@@ -11,6 +11,7 @@ import { BadRequestError, NotFoundError, UnAuthorizedError } from "../helpers/er
 
 const txReference = uniqueReference();
 const PENDING_STATUS = 'pending';
+const ESCROW_STATUS = 'escrow';
 const APPROVED_STATUS = 'successful';
 const REFUND_STATUS = 'refunded';
 const CANCELLED_STATUS = 'cancelled';
@@ -22,7 +23,7 @@ export default class WalletService {
     
     static async getWalletIn(filterQuery) {
         const wallet = await this.model.findOne(filterQuery)
-        return wallet || null;
+        return wallet || false;
     }
 
     static async fundWallet(user, amount) {
@@ -133,6 +134,27 @@ export default class WalletService {
                 status: updatePayment.status,
             }
         };
+    }
+    
+    static async getEscrowBalance(userId) {
+        const inCondition = userId  ? { user_id: new mongoose.Types.ObjectId(userId) } : {}; // Match only if userId is provided
+        
+        const walletInTotal = await WalletIn.aggregate([
+            {
+                $match: {
+                ...inCondition,
+                status: { $in: [ESCROW_STATUS] }
+                },
+            },
+            {
+                $group: {
+                    _id: null,
+                    totalWalletIn: { $sum: '$amount' },
+                },
+            },
+        ]);
+        const availableBalance = (walletInTotal[0]?.totalWalletIn || 0);
+        return availableBalance;
     }
 
     static async getAvailableBalance(userId) {

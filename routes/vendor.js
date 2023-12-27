@@ -5,5 +5,6 @@ import VendorController from "../controllers/VendorController.js";
 const router = express.Router();
 
 router.get('/:vendorId', ValidatorMiddleware.validateObjectIds('vendorId'), VendorController.getVendor)
+router.get('/statistic/:vendorId', ValidatorMiddleware.validateObjectIds('vendorId'), VendorController.vendorStatistics);
 
 export default router;

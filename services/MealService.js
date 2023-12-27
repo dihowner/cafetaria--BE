@@ -1,5 +1,6 @@
 import { BadRequestError, NotFoundError } from "../helpers/errorHandler.js";
 import Meal from "../models/meal.js";
+import SubMeals from "../models/submeal.js";
 import filesystem from 'fs'
 
 
@@ -10,16 +11,20 @@ export default class MealService {
     static async createMeal(vendorId, mealProperties) {
         try {
             const {
-                name, meal_type, description, meal_category, is_available, unit_price, image
+                name, meal_type, description, meal_category, is_available, unit_price, packaging, image
             } = mealProperties;
 
             const isMealExist = await this.getOne({vendor: vendorId, name: name});
             if (isMealExist) {
                 // Remove the image ASAP....
-                filesystem.unlinkSync(imagePath)
+                filesystem.unlinkSync(image.path)
                 throw new BadRequestError(`Meal name (${name}) already exists for vendor`)
             } 
             let imagePath = image.path;
+
+            let parsedPackaging = JSON.parse(packaging);
+            if (Object.keys(parsedPackaging).length === 0) throw new BadRequestError('The packaging field cannot be an empty object');
+
             let mealData = new Meal({
                 name: name,
                 vendor: vendorId,
@@ -28,8 +33,10 @@ export default class MealService {
                 mealCategory: meal_category,
                 isAvailable: is_available,
                 unitPrice: unit_price,
+                packaging: parsedPackaging,
                 image: imagePath
             })
+            
             const saveMeal = await mealData.save();
             if (!saveMeal) {
                 // Remove the image ASAP....
@@ -59,38 +66,43 @@ export default class MealService {
             const isMealExist = await this.getOne({vendor: vendorId, _id: mealId});
             if (!isMealExist) throw new NotFoundError(`Meal with given id (${mealId}) could not be found`)
             await Meal.deleteOne({_id: mealId})
+            await SubMeals.deleteMany({meal: mealId})
         }
         catch (error) {
-            throw new BadRequestError(error.message);
+            if (error instanceof NotFoundError) throw new NotFoundError(error.message);
         }
     }
     
     static async getMeal(mealId) {
         try {
             const meal = await this.getOne({_id: mealId})
-            if (!meal) throw new NotFoundError('Meal could not be found')
+            if (!meal) throw new NotFoundError(`Meal (${mealId}) could not be found`)
             return meal
         }
         catch(error) {
-            throw new BadRequestError(error.message);
+            if (error instanceof NotFoundError) throw new NotFoundError(error.message);
         }
     }
 
     static async updateMeal(mealId, mealProperties) {
         try {
             const {
-                name, meal_type, description, meal_category, is_available, unit_price, image
+                name, meal_type, description, meal_category, is_available, unit_price, packaging, image
             } = mealProperties;
 
             const isMealExist = await this.getOne({_id: mealId});
             if (!isMealExist) throw new NotFoundError(`Meal with the given id (${mealId}) does not exist`)
+
+            let parsedPackaging = JSON.parse(packaging);
+            if (Object.keys(parsedPackaging).length === 0) throw new BadRequestError('The packaging field cannot be an empty object');
 
             const updateMealData = {
                 name: name ?? isMealExist.name, 
                 mealType: meal_type ?? isMealExist.mealType,
                 mealCategory: meal_category ?? isMealExist.mealCategory,  
                 description: description ?? isMealExist.description,  
-                isAvailable: is_available ?? isMealExist.isAvailable,  
+                isAvailable: is_available ?? isMealExist.isAvailable, 
+                packaging: parsedPackaging ?? isMealExist.packaging,  
                 unitPrice: unit_price ?? isMealExist.unitPrice, 
             }
             if (image) {
@@ -114,8 +126,8 @@ export default class MealService {
     }
 
     static async getOne(filterQuery) {
-        const user = await this.model.findOne(filterQuery).populate(populateVendorData)
-        return user || null;
+        const meal = await this.model.findOne(filterQuery).populate(populateVendorData)
+        return meal || false;
     }
 
 }

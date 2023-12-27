@@ -11,4 +11,13 @@ export default class VendorController {
             return response.status(error.status).json({message: error.message});
         }
     }
+
+    static async vendorStatistics(request, response) {
+        try {
+            const vendorStats = await VendorService.vendorStats(request.params.vendorId)
+            return response.status(httpStatusCode.OK).json(vendorStats);
+        } catch (error) {
+            return response.status(error.status).json({message: error.message});
+        }
+    }
 }

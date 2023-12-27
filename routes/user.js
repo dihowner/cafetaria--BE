@@ -15,10 +15,15 @@ router.post("/change-password",  AuthMiddleware.requireLoggedInUser,
 router.post("/change-password", AuthMiddleware.requireLoggedInUser, 
                     ValidatorMiddleware.validateRequestActivity('update_password', UserController.validateUpdateUser), 
                     UserController.modifyPassword
-);
+            );
 
 router.put('/profile/update', AuthMiddleware.requireLoggedInUser, UploadMiddleware.uploadSingleImage('storeImage', 'uploads/stores/'), 
                                ValidatorMiddleware.validateRequestActivity('update_profile', UserController.validateUpdateUser), UserController.updateProfile
+            );
+            
+router.put("/modify-tx-pin", AuthMiddleware.authenticateUserType('vendor'), 
+                    ValidatorMiddleware.validateRequestActivity('update_tx_pin', UserController.validateUpdateUser), 
+                    UserController.modifyTxPin
             );
             
 export default router;

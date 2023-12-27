@@ -17,7 +17,7 @@ let uniqueToken;
 
 export default class AuthService {
 
-    static async createUser(name, email, mobile_number, password, userRole, vendorProps) {
+    static async createUser(name, email, mobile_number, password, roles, vendorProps) {
         try{
             const fileContent = await readFile("mailer/templates/verify-registration.html")
             
@@ -28,12 +28,15 @@ export default class AuthService {
             const isPhoneExist = await UserService.getOne({mobile_number: clientNumber })
             if(isPhoneExist) throw new BadRequestError(`Mobile number (${clientNumber}) already associated to a user`)
 
+            const userRole = roles == undefined ? "user" : roles.toLowerCase()
+
             let userData = new User({
                 name: name,
                 email: email,
                 password: await UserService.hashPassword(password),
                 mobile_number: reformNumber(mobile_number),
-                roles: userRole == undefined ? "user" : userRole
+                roles: userRole,
+                transact_pin: userRole == 'vendor' ? '000000' : null
             })
             const createUser = await userData.save();
             if(!createUser) throw new BadRequestError("User creation failed. Please try again later.")
@@ -72,6 +75,7 @@ export default class AuthService {
             
             const user = createUser.toObject();
             delete user.password;
+            delete user.transact_pin;
 
             return user
         }

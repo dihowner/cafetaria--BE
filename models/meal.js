@@ -38,6 +38,10 @@ export const mealSchema = new mongoose.Schema({
         required: true,
         default: 0
     },
+    packaging: {
+        type: Object,
+        required: true
+    },
 	image: {
 		type: String,
         required: true,

@@ -23,7 +23,7 @@ export const vendorSchema = new mongoose.Schema({
     },
     store_image: {
         type: String,
-        required: true
+        default: null
     },
     created_at: {
         type: Date,

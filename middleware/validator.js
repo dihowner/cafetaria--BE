@@ -71,4 +71,27 @@ export default class ValidatorMiddleware {
 			}
 		};
 	};
+
+	static parseJson (req, res, next) {
+		if (req.body.packaging) {
+			if (req.body.packaging === undefined) {
+				next();
+			}
+			else if ( typeof req.body.packaging === 'string' ) {
+				try {
+					// Attempt to parse the 'packaging' field as JSON
+					let parsedPackaging = JSON.parse(req.body.packaging);
+
+					if (Object.keys(parsedPackaging).length === 0) throw new BadRequestError('The packaging field cannot be an empty object');
+					
+					req.body.packaging = parsedPackaging;
+					next();
+				} catch (error) {
+					// Handle JSON parsing error
+					return res.status(400).json({ error: 'Invalid JSON format in the packaging field' });
+				}
+			}
+		}
+		next();
+	};
 }

@@ -154,7 +154,7 @@ export default class AuthController {
     
     static validateCreateUser(request) {
         let requestBody = request.body;
-        let userRole = requestBody.roles;
+        let userRole = requestBody.roles == undefined ? 'user' : requestBody.roles;
         let userSchema;
     
         switch(userRole) {

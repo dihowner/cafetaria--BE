@@ -29,8 +29,12 @@ export const userSchema = new mongoose.Schema({
         required: true,
         default: 'user'
     },
-    vendor_store: {
-        type: Object
+    transact_pin: {
+        type: String,
+        default: '000000',
+        required: function () {
+            return this.roles === 'vendor';
+        }
     },
     is_verified: {
         type: String,

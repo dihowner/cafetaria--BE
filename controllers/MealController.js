@@ -21,10 +21,10 @@ export default class MealController {
     static async deleteMeal(request, response) {
         try {
             const {
-                params: { id }
+                params: { mealId }
             } = request;
-            const vendorId = request.user._id;
-            const deleteMeal = await MealService.deleteMeal(vendorId, id)
+            const vendorId = request.user.vendor;
+            const deleteMeal = await MealService.deleteMeal(vendorId, mealId)
             return response.status(httpStatusCode.OK).json(deleteMeal);
         } catch (error) {
             return response.status(error.status).json({message: error.message});
@@ -52,8 +52,6 @@ export default class MealController {
         }
     }
 
-    /** Schema Validations **/
-
     static validateAddMeal(request) {
         const validateMealSchema = Joi.object({
             name: Joi.string().min(3).required().messages({
@@ -77,6 +75,10 @@ export default class MealController {
                 'string.base':'Meal price must be a numeric value',
                 'any.required':'Meal price is required',
                 'string.pattern.base':'Only numeric digit is allowed'
+            }),
+            packaging: Joi.string().required().messages({
+                'string.base': 'Packaging must be an object',
+                'any.required': 'Meal packaging is required',
             })
         })
         return validateMealSchema.validate(request.body, {abortEarly: false});
@@ -106,17 +108,20 @@ export default class MealController {
                 'any.required':'Meal price is required',
                 'string.pattern.base':'Only numeric digit is allowed'
             }),
-            mealImage: Joi.string()
+            mealImage: Joi.string(),
+            packaging: Joi.string().required().messages({
+                'string.base': 'Packaging must be an object',
+                'any.required': 'Meal packaging is required',
+            })
         })
         return validateMealSchema.validate(request.body, {abortEarly: false});
     }
 
     static validateDeleteMeal(request) {
         const validateMealSchema = Joi.object({
-            id: Joi.string().min(3).required().messages({
-                'string.base':'Meal name must be a string',
-                'any.required':'Meal name is required',
-                'string.length':'Meal name must be 6 digits'
+            mealId: Joi.string().required().messages({
+                'string.base':'Meal Id must be a string',
+                'any.required':'Meal Id is required'
             })
         })
         return validateMealSchema.validate(request.params, {abortEarly: false});

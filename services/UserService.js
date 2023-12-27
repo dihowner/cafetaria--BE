@@ -31,7 +31,7 @@ export default class UserService {
     };
 
     static async modifyPassword(userId, currentPassword, newPassword) {
-        const user  = await this.getOne({_id: userId})
+        const user = await this.getOne({_id: userId})
         if (!user) throw new UnAuthorizedError()
         const isValidCurrentPassword = await this.comparePassword(currentPassword, user.password)
         if (!isValidCurrentPassword) throw new BadRequestError('Invalid current password supplied')
@@ -101,9 +101,33 @@ export default class UserService {
         }
     }
 
+    static async modifyTxPin(userId, userData) {
+        try {
+            const  { current_pin, new_pin } = userData;
+
+            const user = await this.getOne({_id: userId, roles: 'vendor'})
+            if (!user) throw new UnAuthorizedError()
+            let userCurrentPin = user.transact_pin
+            if (userCurrentPin == null) {
+                userCurrentPin = '000000';
+            }
+
+            if (userCurrentPin != current_pin) throw new BadRequestError(`Incorrect current transaction pin (${current_pin}) supplied`)
+        
+            const updatePin = await this.updateUser(userId, {transact_pin: new_pin});
+            if (!updatePin) throw new BadRequestError('Error updating transaction pin')
+            return {
+                message: 'Transaction pin changed successfully',
+                data: updatePin
+            }
+        } catch (error) {
+            throw error;
+        }
+    }
+
     static async getOne(filterQuery) {
         const user = await this.model.findOne(filterQuery)
-        return user || null;
+        return user || false;
     }
 
     static async updateUser(userId, updateData, filterQuery = 'name email') {

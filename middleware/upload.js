@@ -31,7 +31,6 @@ export default class UploadMiddleware {
         const fileFilter = (request, file, cb) => {
             const ext = path.extname(file.originalname).toLowerCase();
             const allowedExtensions = this.getAllowedExensions(fileType)
-            
             if (allowedExtensions.includes(ext)) {
                 cb(null, true);
             } else {
@@ -48,7 +47,8 @@ export default class UploadMiddleware {
 
         return (request, response, next) => {
             upload(request, response, function (error) {
-                if(!request.file && request.method.toUpperCase() == 'POST') {
+                
+                if (request.method.toUpperCase() == 'POST' && !request.errorMimeType) {
                     return response.status(httpStatusCode.BAD_REQUEST).json({ message: 'Please select a valid file' });
                 } else if (error instanceof multer.MulterError) {
                     if (error.code === 'LIMIT_FILE_SIZE') {

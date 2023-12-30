@@ -2,9 +2,6 @@ import Joi from 'joi';
 import httpStatusCode from 'http-status-codes'
 import MealService from '../services/MealService.js';
 
-const mealCategories = ['Meal Pack', 'Others'];
-const mealType = ['Meals', 'Groceries'];
-
 export default class MealController {
     static async createMeal(request, response) {
         try {
@@ -59,13 +56,11 @@ export default class MealController {
                 'any.required':'Meal name is required',
                 'string.length':'Meal name must be 6 digits'
             }),
-            meal_type: Joi.string().valid(...mealType).required(),
             description: Joi.string().min(3).required().messages({
                 'string.base':'Meal description must be a string',
                 'any.required':'Meal description is required',
                 'string.length':'Meal description must be 6 digits'
             }),
-            meal_category: Joi.string().valid(...mealCategories).required(),
             is_available: Joi.boolean().required().messages({
                 'boolean.base':'Meal availability must be a boolean value',
                 'boolean.empty':'Please indicate meal availability for purchasing sake',
@@ -91,13 +86,11 @@ export default class MealController {
                 'any.required':'Meal name is required',
                 'string.length':'Meal name must be 6 digits'
             }),
-            meal_type: Joi.string().valid(...mealType),
             description: Joi.string().min(3).messages({
                 'string.base':'Meal description must be a string',
                 'any.required':'Meal description is required',
                 'string.length':'Meal description must be 6 digits'
             }),
-            meal_category: Joi.string().valid(...mealCategories),
             is_available: Joi.boolean().messages({
                 'boolean.base':'Meal availability must be a boolean value',
                 'boolean.empty':'Please indicate meal availability for purchasing sake',

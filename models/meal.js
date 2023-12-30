@@ -1,8 +1,5 @@
 import mongoose from 'mongoose';
 
-const mealCategories = ['Meal Pack', 'Others'];
-const mealType = ['Meals', 'Groceries'];
-
 export const mealSchema = new mongoose.Schema({
     name: {
         type: String,
@@ -13,16 +10,6 @@ export const mealSchema = new mongoose.Schema({
         type: mongoose.Schema.Types.ObjectId,
         required: true,
         ref: 'Vendors'
-    },
-    mealType: {
-        type: String,
-        enum: mealType,
-        required: true
-    },
-    mealCategory: {
-        type: String,
-        enum: mealCategories,
-        required: true
     },
     description: {
         type: String,

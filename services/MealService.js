@@ -3,7 +3,6 @@ import Meal from "../models/meal.js";
 import SubMeals from "../models/submeal.js";
 import filesystem from 'fs'
 
-
 const populateVendorData = [{ path: 'vendor', select: '_id store_name' }];
 
 export default class MealService {
@@ -11,7 +10,7 @@ export default class MealService {
     static async createMeal(vendorId, mealProperties) {
         try {
             const {
-                name, meal_type, description, meal_category, is_available, unit_price, packaging, image
+                name, description, is_available, unit_price, packaging, image
             } = mealProperties;
 
             const isMealExist = await this.getOne({vendor: vendorId, name: name});
@@ -28,9 +27,7 @@ export default class MealService {
             let mealData = new Meal({
                 name: name,
                 vendor: vendorId,
-                mealType: meal_type,
                 description: description,
-                mealCategory: meal_category,
                 isAvailable: is_available,
                 unitPrice: unit_price,
                 packaging: parsedPackaging,
@@ -48,8 +45,6 @@ export default class MealService {
                 data: {
                     meal_id: saveMeal._id,
                     name: name,
-                    mealType: meal_type,
-                    mealCategory: meal_category,
                     isAvailable: is_available,
                     unitPrice: unit_price,
                     image_path: imagePath
@@ -87,7 +82,7 @@ export default class MealService {
     static async updateMeal(mealId, mealProperties) {
         try {
             const {
-                name, meal_type, description, meal_category, is_available, unit_price, packaging, image
+                name, description, is_available, unit_price, packaging, image
             } = mealProperties;
 
             const isMealExist = await this.getOne({_id: mealId});
@@ -98,8 +93,6 @@ export default class MealService {
 
             const updateMealData = {
                 name: name ?? isMealExist.name, 
-                mealType: meal_type ?? isMealExist.mealType,
-                mealCategory: meal_category ?? isMealExist.mealCategory,  
                 description: description ?? isMealExist.description,  
                 isAvailable: is_available ?? isMealExist.isAvailable, 
                 packaging: parsedPackaging ?? isMealExist.packaging,  
@@ -113,7 +106,7 @@ export default class MealService {
             }
 
             const updateMeal = await this.model.findByIdAndUpdate(mealId, 
-                    { $set: updateMealData }, { new: true, select: 'name vendor mealType mealCategory isAvailable image' }).populate(populateVendorData);
+                    { $set: updateMealData }, { new: true, select: 'name vendor isAvailable image' }).populate(populateVendorData);
             if (!updateMeal) throw new BadRequestError("Error updating meal. Please try again later")
             return {
                 message: "Meal update request was successful",

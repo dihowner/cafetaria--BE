@@ -20,4 +20,13 @@ export default class VendorController {
             return response.status(error.status).json({message: error.message});
         }
     }
+
+    static async getVendorMeals(request, response) {
+        try {
+            const getVendorMeals = await VendorService.getVendorMeals(request.params.vendorId)
+            return response.status(httpStatusCode.OK).json(getVendorMeals);
+        } catch (error) {
+            return response.status(error.status).json({message: error.message});
+        }
+    }
 }

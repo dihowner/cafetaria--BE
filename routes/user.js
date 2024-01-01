@@ -26,4 +26,6 @@ router.put("/modify-tx-pin", AuthMiddleware.authenticateUserType('vendor'),
                     UserController.modifyTxPin
             );
             
+router.get("/:userId", ValidatorMiddleware.validateObjectIds('userId'), UserController.getUser);
+            
 export default router;

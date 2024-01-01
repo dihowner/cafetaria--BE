@@ -6,5 +6,6 @@ const router = express.Router();
 
 router.get('/:vendorId', ValidatorMiddleware.validateObjectIds('vendorId'), VendorController.getVendor)
 router.get('/statistic/:vendorId', ValidatorMiddleware.validateObjectIds('vendorId'), VendorController.vendorStatistics);
+router.get('/:vendorId/meals', ValidatorMiddleware.validateObjectIds('vendorId'), VendorController.getVendorMeals)
 
 export default router;

@@ -1,6 +1,8 @@
+import { NotFoundError, UnAuthorizedError } from "../helpers/errorHandler.js";
 import Vendors from "../models/vendor.js";
 import UserService from "./UserService.js";
 import WalletService from "./WalletService.js";
+import Meal from "../models/meal.js";
 
 const populateUserData = [{ path: 'user', select: '_id name mobile_number email role' }];
 
@@ -17,6 +19,13 @@ export default class VendorService {
         //     total_order_progress: Math.round(109 * Math.random()),
         //     total_order_received: Math.round(105 * Math.random()),
         }
+    }
+
+    static async getVendorMeals(vendorId) {
+        const vendor = await this.getOne({_id: vendorId})
+        if (!vendor) throw new NotFoundError(`Vendor ID (${vendorId}) could not be found`)
+        const allMeals = await Meal.find({vendor: vendorId})
+        return allMeals;
     }
 
     static async getOne(filterQuery) {

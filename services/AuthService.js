@@ -128,15 +128,24 @@ export default class AuthService {
             if (user.is_verified == 'suspended') throw new BadRequestError("Your account is currently suspended. Kindly reach out to our support to assist you activate your account")
             const bearerToken = await UserService.generateAuthToken(user)
             
+            const userId = user._id;
+
+            const data = {
+                id: userId,
+                name: user.name,
+                email: user.email,
+                role: user.roles
+            };
+
+            if (user.roles == 'vendor') {
+                const vendorInfo  = await Vendors.findOne({user: userId});
+                data.vendor_id = vendorInfo._id;
+            }
+            
             return {
                 message: "Login successful",
-                token: bearerToken, 
-                data: {
-                    id: user._id,
-                    name: user.name,
-                    email: user.email,
-                    role: user.roles
-                }
+                token: bearerToken,
+                data: data
             }
         }        
         throw new BadRequestError('Bad combination of email address or password');

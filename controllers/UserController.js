@@ -1,7 +1,7 @@
 import Joi from 'joi';
 import httpStatusCode from 'http-status-codes'
 import UserService from '../services/UserService.js';
-import { UnAuthorizedError } from '../helpers/errorHandler.js';
+import { NotFoundError, UnAuthorizedError } from '../helpers/errorHandler.js';
 
 const userRoles = ['user', 'vendor', 'admin'];
 
@@ -73,6 +73,21 @@ export default class UserController {
             // Handle the specific error types
             if (error instanceof UnAuthorizedError) {
                 return response.status(httpStatusCode.UNAUTHORIZED).json({ message: error.message });
+            } else {
+                // Handle errors
+                return response.status(httpStatusCode.BAD_REQUEST).json({ message: error.message })
+            }
+        }
+    }
+
+    static async getUser(request , response) {
+        try {
+            const getUser = await UserService.getUser(request.params.userId)
+            return response.status(httpStatusCode.OK).json(getUser)
+        } catch(error) {
+            // Handle the specific error types
+            if (error instanceof NotFoundError) {
+                return response.status(httpStatusCode.NOT_FOUND).json({ message: error.message });
             } else {
                 // Handle errors
                 return response.status(httpStatusCode.BAD_REQUEST).json({ message: error.message })

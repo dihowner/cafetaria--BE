@@ -3,7 +3,7 @@ import jwt from "jsonwebtoken";
 import bcrypt from 'bcrypt'
 import { config } from "../utility/config.js"
 import User from "../models/user.js";
-import { BadRequestError, UnAuthorizedError } from "../helpers/errorHandler.js";
+import { BadRequestError, NotFoundError, UnAuthorizedError } from "../helpers/errorHandler.js";
 import reformNumber from "../utility/number.js"
 import Vendors from "../models/vendor.js";
 import VendorService from "./VendorService.js";
@@ -120,6 +120,24 @@ export default class UserService {
                 message: 'Transaction pin changed successfully',
                 data: updatePin
             }
+        } catch (error) {
+            throw error;
+        }
+    }
+
+    static async getUser(userId) {
+        try {
+            let user = await this.getOne({_id: userId})
+            if (!user) throw new NotFoundError(`User Id (${userId}) not found`)
+
+            if (user.roles.toLowerCase() == 'vendor') {
+                const vendorInfo = await Vendors.findOne({user: userId})
+                const vendorData = vendorInfo.toObject();
+                delete vendorData.user;
+                user = user.toObject();    
+                user.vendor = vendorData
+            }
+            return user;
         } catch (error) {
             throw error;
         }

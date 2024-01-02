@@ -1,6 +1,4 @@
 import mongoose from 'mongoose';
-import bcrypt from 'bcrypt';
-import Joi from 'joi';
 
 const userRoles = ['user', 'vendor', 'admin'];
 const regStatus = ['pending', 'activated', 'suspended'];
@@ -35,6 +33,10 @@ export const userSchema = new mongoose.Schema({
         required: function () {
             return this.roles === 'vendor';
         }
+    },
+    bank: {
+        type: Object,
+        required: false
     },
     is_verified: {
         type: String,

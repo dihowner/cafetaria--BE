@@ -14,7 +14,8 @@ export const config = {
   FLW_SECRET: process.env.FLW_SECRET_KEY,
   APP_LOGO: "https://jamborow.co.uk/img/front/Logo.png",
   system_mail: {
-    no_reply: 'no-reply@cafetaria.ng'
+    no_reply: 'no-reply@cafetaria.ng',
+    support: 'support@cafetaria.ng'
   },
   OTP_EXPIRY_TIME:10, //Minutes
   SOCIAL_MEDIA_HANDLE: 'peaksystemsng'

@@ -1,5 +1,4 @@
 import mongoose from 'mongoose';
-import Joi from 'joi';
 
 const resetPassStatus = ['new', 'used', 'expired'];
 

@@ -95,6 +95,26 @@ export default class UserController {
         }
     }
 
+    static async setUpBankAccount(request , response) {
+        try {
+            const userData = request.body;
+            const user = request.user;
+            const updateTxPin = await UserService.setUpBankAccount(user._id, userData)
+            return response.status(httpStatusCode.OK).json(updateTxPin)
+            
+        } catch(error) {
+            // Handle the specific error types
+            if (error instanceof UnAuthorizedError) {
+                return response.status(httpStatusCode.UNAUTHORIZED).json({ message: error.message });
+            } else if (error instanceof NotFoundError) {
+                return response.status(httpStatusCode.NOT_FOUND).json({ message: error.message });
+            } else {
+                // Handle errors
+                return response.status(httpStatusCode.BAD_REQUEST).json({ message: error.message })
+            }
+        }
+    }
+
     /** Schema Validations **/    
 
     static checkOldNewPass = (value, helpers) => {
@@ -189,6 +209,34 @@ export default class UserController {
         }),
     })
 
+    static updateBankSchema = Joi.object({
+        bank_code: Joi.string().required().pattern(/^[0-9]+$/).messages({
+            'string.base':'Bank code must be a number',
+            'any.required':'Bank is required',
+            'string.pattern.base':'Bank code must contain numeric values only'
+        }),
+        account_number: Joi.string().required().pattern(/^[0-9]+$/).min(10).max(10).messages({
+            'string.base':'Account number must be a number',
+            'any.required':'Account number is required',
+            'string.min':'Account number must be 10 digits',
+            'string.max':'Account number cannot exceeds 10 digits',
+            'string.pattern.base':'Only numeric value is allowed'
+        }),
+        account_name: Joi.string().required().messages({
+            'any.required':'Account name is required',
+            'string.base':'Account name must be a string',
+            'string.empty':'Account name cannot be empty'
+        }),
+        transact_pin: Joi.string().required().min(6).max(6).pattern(/^[0-9]+$/).invalid('000000').messages({
+            'string.base':'Transaction pin must be a number',
+            'any.required':'Transaction pin is required',
+            'string.min':'Transaction pin must be 6 digits',
+            'string.max':'Transaction pin cannot exceeds 6 digits',
+            'string.pattern.base':'Only numeric value is allowed',
+            'any.invalid': 'Transaction pin cannot be "000000". Kindly set your transaction pin if you are yet to do so',
+        })
+    })
+
     static validateUpdateUser(request) {
         let payload = request.body;
         let updateSchema;
@@ -203,6 +251,9 @@ export default class UserController {
             break;
             case 'update_tx_pin':
                 updateSchema = UserController.updateTxPinSchema;
+            break;
+            case 'update_bank':
+                updateSchema = UserController.updateBankSchema;
             break;
             case 'password_reset':
                 updateSchema = UserController.updatePasswordResetSchema;

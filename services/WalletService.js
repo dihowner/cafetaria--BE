@@ -1,15 +1,12 @@
 import mongoose from "mongoose";
-import User from "../models/user.js";
 import WalletIn from "../models/wallet_in.js";
 import WalletOut from "../models/wallet_out.js";
-import httpStatusCode from "http-status-codes";
 import { uniqueReference } from '../utility/util.js'
 import FlutterwaveService  from '../services/FlutterwaveService.js'
 import {config} from "../utility/config.js"
 import UserService from "./UserService.js";
 import { BadRequestError, NotFoundError, UnAuthorizedError } from "../helpers/errorHandler.js";
 
-const txReference = uniqueReference();
 const PENDING_STATUS = 'pending';
 const ESCROW_STATUS = 'escrow';
 const APPROVED_STATUS = 'successful';
@@ -31,6 +28,8 @@ export default class WalletService {
         const isUserAuthorized = await UserService.getOne({_id: userId, roles: 'user'})
         if (!isUserAuthorized) throw new UnAuthorizedError
 
+        const txReference = uniqueReference();
+        
         let reservePaymentData = {
             amount: amount,
             currency : "NGN",

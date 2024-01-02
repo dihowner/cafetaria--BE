@@ -9,7 +9,7 @@ import Meal from "../models/meal.js";
 export default class TrashController {
     static async trashModel (request, response) {
         try {
-            return response.send(await TrashController.processTrashModel(request.params.modelName))
+            return response.status(httpStatusCode.OK).json(await TrashController.processTrashModel(request.params.modelName))
         } catch (error) {
             return response.status(error.status).json({message: error.message});
         } 

@@ -22,3 +22,16 @@ export function generateRandomNumber(length = 6) {
 
   return randomNumber;
 }
+
+export function niceDateFormat(dateString) {
+  const options = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric', hour: 'numeric', minute: 'numeric', second: 'numeric', timeZoneName: 'short' };
+  const date = new Date(dateString);
+  const formattedDate = date.toLocaleDateString('en-US', options);
+
+  return formattedDate;
+}
+
+export function explodeString(stringData) {
+    const explodedArray = stringData.split(" ");
+    return explodedArray;
+}

@@ -26,6 +26,11 @@ router.put("/modify-tx-pin", AuthMiddleware.authenticateUserType('vendor'),
                     UserController.modifyTxPin
             );
             
+router.put("/set-bank", AuthMiddleware.authenticateUserType('vendor'), 
+                    ValidatorMiddleware.validateRequestActivity('update_bank', UserController.validateUpdateUser), 
+                    UserController.setUpBankAccount
+            );
+            
 router.get("/:userId", ValidatorMiddleware.validateObjectIds('userId'), UserController.getUser);
             
 export default router;

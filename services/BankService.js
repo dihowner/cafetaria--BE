@@ -2,6 +2,7 @@ import FlutterwaveService from "./FlutterwaveService.js";
 import PayoutBank from "../models/payoutbanks.js";
 
 export default class BankService {
+    static model = PayoutBank;
     
     static async fetchAllBanks() {
         return await PayoutBank.find({}).sort({bank_name: 1})
@@ -43,5 +44,20 @@ export default class BankService {
         catch(error) {
             throw error
         }
+    }
+
+    static async verifyBankAccount(bankCode, accountNumber) {
+        try {
+            const retrieveBanks = await FlutterwaveService.verifyAccount(bankCode, accountNumber);
+            return retrieveBanks;
+        }
+        catch(error) {
+            throw error
+        }
+    }
+
+    static async getOne(filterQuery) {
+        const user = await this.model.findOne(filterQuery)
+        return user || false;
     }
 }

@@ -1,5 +1,5 @@
-import WalletService from "./WalletService.js";
 import jwt from "jsonwebtoken";
+import WalletService from "./WalletService.js";
 import bcrypt from 'bcrypt'
 import { config } from "../utility/config.js"
 import User from "../models/user.js";
@@ -7,6 +7,8 @@ import { BadRequestError, NotFoundError, UnAuthorizedError } from "../helpers/er
 import reformNumber from "../utility/number.js"
 import Vendors from "../models/vendor.js";
 import VendorService from "./VendorService.js";
+import BankService from "./BankService.js";
+import WithdrawalService from "./WithdrawalService.js";
 
 export default class UserService {
     static model = User;
@@ -138,6 +140,45 @@ export default class UserService {
                 user.vendor = vendorData
             }
             return user;
+        } catch (error) {
+            throw error;
+        }
+    }
+
+    static async setUpBankAccount(userId, userData) {
+        try {
+            const {
+                account_number, transact_pin, bank_code, account_name
+            } = userData
+
+            const user = await this.getOne({_id: userId, 'roles': 'vendor'})
+            if (!user) throw new UnAuthorizedError()
+
+            const isPendingWithdrawal = await WithdrawalService.getOne({user: userId, status: 'pending'})
+            if (isPendingWithdrawal) throw new BadRequestError('You currently have an ongoing withdrawal request')
+
+            const isAccountNumberExist = await this.getOne({_id: {$ne: userId}, 'bank.accountNumber': account_number});
+            if (isAccountNumberExist) throw new BadRequestError(`Account number (${account_number}) supplied already belong to another user`)
+            
+            if (user.transact_pin != transact_pin) throw new BadRequestError(`Incorrect transaction pin (${transact_pin}) supplied`)
+
+            const getBank = await BankService.getOne({'bank_code': bank_code});
+            if (!getBank) throw new NotFoundError(`Invalid bank code (${bank_code}) supplied`)
+    
+            // Prepare the user update data...
+            const updateData = {
+                accountName: account_name,
+                accountNumber: account_number,
+                bankName: getBank.bank_name,
+                bankId: bank_code,
+            }
+            
+            const updateBank = await this.updateUser(userId, {bank: updateData}, 'name email bank');
+            return {
+                message: 'Bank updated successfully',
+                data: updateBank
+            }
+
         } catch (error) {
             throw error;
         }

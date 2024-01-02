@@ -31,7 +31,7 @@ export default class WalletController {
             const paymentObject = {txId: responseQuery.transaction_id, tx_channel: 'flutterwave'};
 
             const finalizePayment = await WalletService.updateWalletIn(responseQuery.tx_ref, responseQuery.status, paymentObject)
-            return response.send(finalizePayment)
+            return response.status(httpStatusCode.OK).json(finalizePayment)
         }
         catch(error) {
             // Handle the specific error types
@@ -50,12 +50,12 @@ export default class WalletController {
     /** Schema Validations **/    
     static validateFundingRequest(request) {
         const walletInSchema = Joi.object({
-            amount: Joi.number().required().min(1).messages({
+            amount: Joi.string().required().pattern(/^[0-9]+$/).messages({
+                'string.base':'Amount must be a number',
                 'any.required':'Amount is required',
-                'any.min':'Funding amount must be greater than zero'
+                'string.pattern.base':'Only numeric value is allowed'
             })
         });
-    
         return walletInSchema.validate(request.body, {abortEarly: false});
     }
 

@@ -11,6 +11,7 @@ import SubMealRoute from "../routes/submeal.js";
 import VendorRoute from "../routes/vendor.js";
 import TrashRoute from "../routes/trash.js";
 import BankRoute from "../routes/banks.js";
+import WithdrawalRoute from "../routes/withdrawal.js";
 
 const routeApp = function (app) {
 	app.use(bodyParser.json())
@@ -25,6 +26,7 @@ const routeApp = function (app) {
     app.use("/api/submeal/", SubMealRoute);
     app.use("/api/vendor/", VendorRoute);
     app.use("/api/banks/", BankRoute);
+    app.use("/api/withdrawal/", WithdrawalRoute);
     app.use("/api/trash/", TrashRoute);
 
 	app.all("*", (request, response) => {

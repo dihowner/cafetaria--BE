@@ -1,0 +1,51 @@
+<body style="background-color: #f3f3f3;">
+  <table border="0" cellpadding="0" cellspacing="0" width="100%" style="margin-top: 2%">
+    <tr>
+      <td align="center" bgcolor="#f3f3f3">
+        <table border="0" cellpadding="0" cellspacing="0" width="100%" style="max-width: 600px;">
+          <tr>
+            <td align="left" bgcolor="#ffffff" style="padding: 36px 24px 0; font-family: Helvetica, Arial, sans-serif; border-top: 3px solid #ff9c06;">
+               
+            </td>
+          </tr>
+        </table>
+      </td>
+    </tr>
+    <tr>
+      <td align="center" bgcolor="#f3f3f3">
+        <table border="0" cellpadding="0" cellspacing="0" width="100%" style="max-width: 600px;">
+          <tr>
+            <td align="left" bgcolor="#ffffff" style="padding: 24px; font-family: Helvetica, Arial, sans-serif; font-size: 16px; line-height: 24px;">
+              <p style="margin: 0;">
+				      Dear <b>{{customer_name}}, </b> <br><br>
+              We hope this message finds you well. We are pleased to inform you that your recent withdrawal request has been successfully recieved and will be processed shortly.
+              Below are the details of the transaction:
+              <br>
+              <ul>
+                <li>Transaction ID: {{transactionReference}}</li>
+                <li>Date and Time of Withdrawal: {{withdrawalDate}}</li>
+                <li>Amount Withdrawn: NGN{{amountWithdraw}}</li>
+                <li>Current Balance: NGN{{newBalance}}</li>
+              </ul>
+
+              <h4>Banking Information</h4>
+              <ul>
+                <li><strong>Bank Name: </strong>: {{bankName}}</li>
+                <li><strong>Account Name: </strong>: {{accountName}}</li>
+                <li><strong>Account Number: </strong> {{accountNumber}}</li>
+              </ul>
+              <br>
+              Please review the details above to ensure accuracy. 
+              If you have any questions or concerns regarding this transaction, feel free to contact our customer support team at <a href="mailto:{{supportemail}}">{{supportemail}}</a>
+              <br><br>
+              Best regards,
+              <br>
+              The {{app_name}} Team
+			      </p>
+            </td>
+          </tr>
+        </table>
+      </td>
+    </tr>
+  </table>
+</body>

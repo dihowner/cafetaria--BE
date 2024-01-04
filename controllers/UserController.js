@@ -82,7 +82,8 @@ export default class UserController {
 
     static async getUser(request , response) {
         try {
-            const getUser = await UserService.getUser(request.params.userId)
+            const userId = request.user._id
+            const getUser = await UserService.getUser(userId)
             return response.status(httpStatusCode.OK).json(getUser)
         } catch(error) {
             // Handle the specific error types
@@ -125,18 +126,18 @@ export default class UserController {
     }
 
     static updatePasswordSchema = Joi.object({
-        current_password: Joi.string().required().min(5).custom(UserController.checkOldNewPass, 'different').pattern(new RegExp('^[a-zA-Z0-9]{3,30}$')).messages({
+        current_password: Joi.string().required().min(5).trim().custom(UserController.checkOldNewPass, 'different').pattern(new RegExp('^[a-zA-Z0-9]{3,30}$')).messages({
             'string.base':'Current password must be a string',
             'string.empty':'Current password cannot be empty',
             'any.required':'Current password is required',
             'any.forbidden': 'Current password must not be the same with new password'
         }),
-        new_password: Joi.string().required().min(5).pattern(new RegExp('^[a-zA-Z0-9]{3,30}$')).messages({
+        new_password: Joi.string().required().min(5).trim().pattern(new RegExp('^[a-zA-Z0-9]{3,30}$')).messages({
             'string.base':'New password must be a string',
             'string.empty':'New password cannot be empty',
             'any.required':'New password is required'
         }),
-        confirm_password: Joi.string().required().min(5).pattern(new RegExp('^[a-zA-Z0-9]{3,30}$')).valid(Joi.ref('new_password')).messages({
+        confirm_password: Joi.string().required().min(5).trim().pattern(new RegExp('^[a-zA-Z0-9]{3,30}$')).valid(Joi.ref('new_password')).messages({
             'string.base':'Confirm password must be a string',
             'string.empty':'Confirm password cannot be empty',
             'any.required':'Confirm password is required',
@@ -145,18 +146,18 @@ export default class UserController {
     });
     
     static updatePasswordResetSchema = Joi.object({
-        token: Joi.string().length(6).pattern(/^[0-9]+$/).required().messages({
+        token: Joi.string().length(6).pattern(/^[0-9]+$/).trim().required().messages({
             'string.base':'Verification token must be a string',
             'any.required':'Verification token is required',
             'string.length':'Verification token must be 6 digits',
             'string.pattern.base':'Only numeric digit is allowed'
         }),
-        new_password: Joi.string().required().min(5).pattern(new RegExp('^[a-zA-Z0-9]{3,30}$')).messages({
+        new_password: Joi.string().required().min(5).trim().pattern(new RegExp('^[a-zA-Z0-9]{3,30}$')).messages({
             'string.base':'New password must be a string',
             'string.empty':'New password cannot be empty',
             'any.required':'New password is required'
         }),
-        confirm_password: Joi.string().required().min(5).pattern(new RegExp('^[a-zA-Z0-9]{3,30}$')).valid(Joi.ref('new_password')).messages({
+        confirm_password: Joi.string().required().min(5).trim().pattern(new RegExp('^[a-zA-Z0-9]{3,30}$')).valid(Joi.ref('new_password')).messages({
             'string.base':'Confirm password must be a string',
             'string.empty':'Confirm password cannot be empty',
             'any.required':'Confirm password is required',
@@ -165,10 +166,10 @@ export default class UserController {
     });
 
     static updateProfileSchema = Joi.object({
-        name: Joi.string(),
-        mobile_number: Joi.string().min(11).max(13),
-        store_name: Joi.string(),
-        store_address: Joi.string().when('isPhysicalStore', {
+        name: Joi.string().trim(),
+        mobile_number: Joi.string().min(11).max(13).trim(),
+        store_name: Joi.string().trim(),
+        store_address: Joi.string().trim().when('isPhysicalStore', {
             is: true,
             then: Joi.string().required().messages({
               'any.required': 'Store address is required when physical store is true.',
@@ -210,24 +211,24 @@ export default class UserController {
     })
 
     static updateBankSchema = Joi.object({
-        bank_code: Joi.string().required().pattern(/^[0-9]+$/).messages({
+        bank_code: Joi.string().required().trim().pattern(/^[0-9]+$/).messages({
             'string.base':'Bank code must be a number',
             'any.required':'Bank is required',
             'string.pattern.base':'Bank code must contain numeric values only'
         }),
-        account_number: Joi.string().required().pattern(/^[0-9]+$/).min(10).max(10).messages({
+        account_number: Joi.string().required().trim().pattern(/^[0-9]+$/).min(10).max(10).messages({
             'string.base':'Account number must be a number',
             'any.required':'Account number is required',
             'string.min':'Account number must be 10 digits',
             'string.max':'Account number cannot exceeds 10 digits',
             'string.pattern.base':'Only numeric value is allowed'
         }),
-        account_name: Joi.string().required().messages({
+        account_name: Joi.string().required().trim().messages({
             'any.required':'Account name is required',
             'string.base':'Account name must be a string',
             'string.empty':'Account name cannot be empty'
         }),
-        transact_pin: Joi.string().required().min(6).max(6).pattern(/^[0-9]+$/).invalid('000000').messages({
+        transact_pin: Joi.string().required().trim().min(6).max(6).pattern(/^[0-9]+$/).invalid('000000').messages({
             'string.base':'Transaction pin must be a number',
             'any.required':'Transaction pin is required',
             'string.min':'Transaction pin must be 6 digits',

@@ -14,12 +14,12 @@ export default class MealService {
             } = mealProperties;
 
             const isMealExist = await this.getOne({vendor: vendorId, name: name});
+            let imagePath = image.path;
             if (isMealExist) {
                 // Remove the image ASAP....
-                filesystem.unlinkSync(image.path)
+                filesystem.unlinkSync(imagePath)
                 throw new BadRequestError(`Meal name (${name}) already exists for vendor`)
             } 
-            let imagePath = image.path;
 
             let parsedPackaging = JSON.parse(packaging);
             if (Object.keys(parsedPackaging).length === 0) throw new BadRequestError('The packaging field cannot be an empty object');

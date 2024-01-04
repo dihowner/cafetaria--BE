@@ -14,7 +14,6 @@ export default class WithdrawalController {
             const withdraw = await WithdrawalService.initiateWithdrawal(userId, amount, transact_pin)
             return response.status(httpStatusCode.OK).json(withdraw)
         } catch (error) {
-            console.log(error);
             return response.status(error.status).json({message: error.message});
         }
     }
@@ -25,7 +24,6 @@ export default class WithdrawalController {
             const withdrawalHistory = await WithdrawalService.getWithdrawalHistory(userId)
             return response.status(httpStatusCode.OK).json(withdrawalHistory)
         } catch (error) {
-            console.log(error);
             return response.status(error.status).json({message: error.message});
         }
     }
@@ -36,19 +34,18 @@ export default class WithdrawalController {
             const viewHistory = await WithdrawalService.viewWithdrawalHistory(historyId)
             return response.status(httpStatusCode.OK).json(viewHistory)
         } catch (error) {
-            console.log(error);
             return response.status(error.status).json({message: error.message});
         }
     }
 
     static validateWithdrawal(request) {
         const validateWithdrawalSchema = Joi.object({
-            amount: Joi.string().required().pattern(/^[0-9]+$/).messages({
+            amount: Joi.string().required().trim().pattern(/^[0-9]+$/).messages({
                 'string.base':'Amount must be a number',
                 'any.required':'Amount is required',
                 'string.pattern.base':'Only numeric value is allowed'
             }),
-            transact_pin: Joi.string().required().min(6).max(6).pattern(/^[0-9]+$/).messages({
+            transact_pin: Joi.string().required().trim().min(6).max(6).pattern(/^[0-9]+$/).messages({
                 'string.base':'Transaction pin must be a number',
                 'any.required':'Transaction pin is required',
                 'string.min':'Transaction pin must be 6 digits',

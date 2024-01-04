@@ -47,8 +47,10 @@ export default class UploadMiddleware {
 
         return (request, response, next) => {
             upload(request, response, function (error) {
-                
-                if (request.method.toUpperCase() == 'POST' && !request.file) {
+                if (request.errorMimeType) {
+                    // Invalid allowed extension.
+                    return response.status(httpStatusCode.BAD_REQUEST).json({ message: request.errorMimeType });
+                } else if (request.method.toUpperCase() == 'POST' && !request.file) {
                     return response.status(httpStatusCode.BAD_REQUEST).json({ message: 'Please select a valid file' });
                 } else if (error instanceof multer.MulterError) {
                     if (error.code === 'LIMIT_FILE_SIZE') {
@@ -58,9 +60,6 @@ export default class UploadMiddleware {
                     }
                     // A Multer error occurred when uploading.
                     return response.status(httpStatusCode.INTERNAL_SERVER_ERROR).json({ message: error.message });
-                } else if (request.errorMimeType) {
-                    // Invalid allowed extension.
-                    return response.status(httpStatusCode.BAD_REQUEST).json({ message: request.errorMimeType });
                 } else if (error) {
                     // An unknown error occurred when uploading.
                     return response.status(httpStatusCode.INTERNAL_SERVER_ERROR).json({ message: 'Unknown error occurred' });

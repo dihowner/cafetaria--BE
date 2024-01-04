@@ -39,9 +39,9 @@ export default class AuthMiddleWare {
 		}
 		catch(error) {
 			if (error.name === "TokenExpiredError") {
-				return res.status(httpStatusCode.BAD_REQUEST).json({
+				return res.status(httpStatusCode.UNAUTHORIZED).json({
 					status: "error",
-					code: httpStatusCode.BAD_REQUEST,
+					code: httpStatusCode.UNAUTHORIZED,
 					message: "Authorization token expired",
 				})
 			}

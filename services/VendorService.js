@@ -28,6 +28,12 @@ export default class VendorService {
         return allMeals;
     }
 
+    static async getVendor(vendorId) {
+        const vendor = await this.getOne({_id: vendorId})
+        if (!vendor) throw new NotFoundError(`Vendor (${vendorId}) not found`)
+        return vendor;
+    }
+
     static async getOne(filterQuery) {
         const vendor = await this.model.findOne(filterQuery).populate(populateUserData)
         return vendor || false;

@@ -58,17 +58,17 @@ export default class SubMealController {
 
     static validateAddMeal(request) {
         const validateMealSchema = Joi.object({
-            name: Joi.string().min(3).required().messages({
+            name: Joi.string().min(3).trim().required().messages({
                 'string.base':'Meal name must be a string',
                 'any.required':'Meal name is required',
                 'string.length':'Meal name must be 6 digits'
             }),
-            unit_price: Joi.string().required().pattern(/^[0-9]+$/).messages({
+            unit_price: Joi.string().trim().required().pattern(/^[0-9]+$/).messages({
                 'string.base':'Meal price must be a numeric value',
                 'any.required':'Meal price is required',
                 'string.pattern.base':'Only numeric digit is allowed'
             }),
-            category: Joi.string().valid(...SubCategories).required(),
+            category: Joi.string().valid(...SubCategories).trim().required(),
             is_available: Joi.boolean().required().messages({
                 'boolean.base':'Availability must be a boolean value',
                 'boolean.empty':'Please indicate availability for purchasing sake',
@@ -80,17 +80,17 @@ export default class SubMealController {
 
     static validateUpdateMeal(request) {
         const validateMealSchema = Joi.object({
-            name: Joi.string().min(3).messages({
+            name: Joi.string().min(3).trim().messages({
                 'string.base':'Meal name must be a string',
                 'any.required':'Meal name is required',
                 'string.length':'Meal name must be 6 digits'
             }),
-            unit_price: Joi.string().pattern(/^[0-9]+$/).messages({
+            unit_price: Joi.string().pattern(/^[0-9]+$/).trim().messages({
                 'string.base':'Meal price must be a numeric value',
                 'any.required':'Meal price is required',
                 'string.pattern.base':'Only numeric digit is allowed'
             }),
-            category: Joi.string().valid(...SubCategories),
+            category: Joi.string().valid(...SubCategories).trim(),
             is_available: Joi.boolean().messages({
                 'boolean.base':'Availability must be a boolean value',
                 'boolean.empty':'Please indicate availability for purchasing sake',
@@ -102,7 +102,7 @@ export default class SubMealController {
 
     static validateDeleteMeal(request) {
         const validateMealSchema = Joi.object({
-            subMealId: Joi.string().required().messages({
+            subMealId: Joi.string().required().trim().messages({
                 'string.base':'Sub Meal Id must be a string',
                 'any.required':'Sub Meal Id is required'
             })

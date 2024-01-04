@@ -105,40 +105,40 @@ export default class AuthController {
     /** Schema Validations **/
 
     static regSchema = Joi.object({
-        name: Joi.string().required().messages({
+        name: Joi.string().required().trim().messages({
             'string.base':'Name must be a string',
             'string.empty':'Name cannot be empty',
             'any.required':'Name is required'
         }),
-        email: Joi.string().required().messages({
+        email: Joi.string().required().lowercase().trim().messages({
             'string.base':'Email address must be a string',
             'string.empty':'Email address cannot be empty',
             'any.required':'Email address is required'
         }),
-        password: Joi.string().required().min(5).pattern(new RegExp('^[a-zA-Z0-9]{3,30}$')).messages({
+        password: Joi.string().required().trim().min(5).pattern(new RegExp('^[a-zA-Z0-9]{3,30}$')).messages({
             'string.base':'Password must be a string',
             'string.empty':'Password cannot be empty',
             'any.required':'Password is required'
         }),
-        mobile_number: Joi.string().required().min(11).max(13).messages({
+        mobile_number: Joi.string().required().trim().min(11).max(13).messages({
             'string.base':'Mobile number must be a number',
             'any.required':'Mobile number is required',
             'string.min':'Mobile number must be 11 digits',
             'string.max':'Mobile number cannot exceeds 13 digits'
         }),
-        roles: Joi.string().messages({
+        roles: Joi.string().trim().messages({
             'string.base':'Please provide user role',
             'string.any':'Please provide user role'
         })
     });
     
     static vendorRegSchema = this.regSchema.keys({
-        store_name: Joi.string().required().messages({
+        store_name: Joi.string().required().trim().messages({
             'string.base':'Store name must be a string',
             'string.empty':'Store name cannot be empty',
             'any.required':'Store name is required'
         }),
-        store_address: Joi.string().when('isPhysicalStore', {
+        store_address: Joi.string().trim().when('isPhysicalStore', {
             is: true,
             then: Joi.string().required().messages({
               'any.required': 'Store address is required when physical store is true.',
@@ -172,7 +172,7 @@ export default class AuthController {
 
     static validateVerifyToken(request) {
         const verifySchema = Joi.object({
-            token: Joi.string().length(6).pattern(/^[0-9]+$/).required().messages({
+            token: Joi.string().length(6).trim().pattern(/^[0-9]+$/).required().messages({
                 'string.base':'Verification token must be a string',
                 'any.required':'Verification token is required',
                 'string.length':'Verification token must be 6 digits',
@@ -184,12 +184,12 @@ export default class AuthController {
 
     static validateLoginUser(request) {
         const userSchema = Joi.object({
-            email: Joi.string().required().messages({
+            email: Joi.string().required().trim().messages({
                 'string.base':'Email address must be a string',
                 'string.empty':'Email address cannot be empty',
                 'any.required':'Email address is required'
             }),
-            password: Joi.string().required().min(5).pattern(new RegExp('^[a-zA-Z0-9]{3,30}$')).messages({
+            password: Joi.string().required().min(5).trim().pattern(new RegExp('^[a-zA-Z0-9]{3,30}$')).messages({
                 'string.base':'Password must be a string',
                 'string.empty':'Password cannot be empty',
                 'any.required':'Password is required'
@@ -201,7 +201,7 @@ export default class AuthController {
 
     static validatePasswordRequest(request) {
         const PasswordResetSchema = Joi.object({
-            email: Joi.string().required().messages({
+            email: Joi.string().required().trim().messages({
                 'string.base':'Email address must be a string',
                 'string.empty':'Email address cannot be empty',
                 'any.required':'Email address is required'
@@ -212,7 +212,7 @@ export default class AuthController {
     
     static validateVerifyReset(request) {
         const VerifyResetSchema = Joi.object({
-            token: Joi.string().length(6).pattern(/^[0-9]+$/).required().messages({
+            token: Joi.string().length(6).pattern(/^[0-9]+$/).trim().required().messages({
                 'string.base':'Verification token must be a string',
                 'any.required':'Verification token is required',
                 'string.length':'Verification token must be 6 digits',

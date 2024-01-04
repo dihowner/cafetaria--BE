@@ -38,14 +38,14 @@ export default class BankController {
 
     static validateBankAccount(request) {
         const validateBankSchema = Joi.object({
-            account_number: Joi.string().pattern(/^[0-9]+$/).min(10).max(10).messages({
+            account_number: Joi.string().pattern(/^[0-9]+$/).trim().min(10).max(10).messages({
                 'string.base':'Meal price must be a numeric value',
                 'any.required':'Meal price is required',
                 'string.pattern.base':'Only numeric digit is allowed',
                 'string.max':'Account number cannot exceeds 10 digits',
                 'string.min':'Account number must be 10 digits',
             }),
-            bank_code: Joi.string().pattern(/^[0-9]+$/).messages({
+            bank_code: Joi.string().pattern(/^[0-9]+$/).trim().messages({
                 'string.base':'Meal price must be a numeric value',
                 'any.required':'Meal price is required',
                 'string.pattern.base':'Only numeric digit is allowed'

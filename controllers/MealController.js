@@ -1,6 +1,7 @@
 import Joi from 'joi';
 import httpStatusCode from 'http-status-codes'
 import MealService from '../services/MealService.js';
+import { NotFoundError } from '../helpers/errorHandler.js';
 
 export default class MealController {
     static async createMeal(request, response) {
@@ -33,7 +34,12 @@ export default class MealController {
             const getMeal = await MealService.getMeal(request.params.mealId)
             return response.status(httpStatusCode.OK).json(getMeal);
         } catch (error) {
-            return response.status(error.status).json({message: error.message});
+            if (error instanceof NotFoundError) {
+                return response.status(httpStatusCode.NOT_FOUND).json({ message: error.message });
+            } else {
+                // Handle errors
+                return response.status(httpStatusCode.BAD_REQUEST).json({ message: error.message })
+            }
         }
     }
 
@@ -51,12 +57,12 @@ export default class MealController {
 
     static validateAddMeal(request) {
         const validateMealSchema = Joi.object({
-            name: Joi.string().min(3).required().messages({
+            name: Joi.string().min(3).trim().required().messages({
                 'string.base':'Meal name must be a string',
                 'any.required':'Meal name is required',
                 'string.length':'Meal name must be 6 digits'
             }),
-            description: Joi.string().min(3).required().messages({
+            description: Joi.string().min(3).trim().required().messages({
                 'string.base':'Meal description must be a string',
                 'any.required':'Meal description is required',
                 'string.length':'Meal description must be 6 digits'
@@ -66,12 +72,12 @@ export default class MealController {
                 'boolean.empty':'Please indicate meal availability for purchasing sake',
                 'any.required':'Please indicate meal availability for purchasing sake'
             }),
-            unit_price: Joi.string().required().pattern(/^[0-9]+$/).messages({
+            unit_price: Joi.string().required().trim().pattern(/^[0-9]+$/).messages({
                 'string.base':'Meal price must be a numeric value',
                 'any.required':'Meal price is required',
                 'string.pattern.base':'Only numeric digit is allowed'
             }),
-            packaging: Joi.string().required().messages({
+            packaging: Joi.string().required().trim().messages({
                 'string.base': 'Packaging must be an object',
                 'any.required': 'Meal packaging is required',
             })
@@ -81,12 +87,12 @@ export default class MealController {
 
     static validateUpdateMeal(request) {
         const validateMealSchema = Joi.object({
-            name: Joi.string().min(3).messages({
+            name: Joi.string().min(3).trim().messages({
                 'string.base':'Meal name must be a string',
                 'any.required':'Meal name is required',
                 'string.length':'Meal name must be 6 digits'
             }),
-            description: Joi.string().min(3).messages({
+            description: Joi.string().min(3).trim().messages({
                 'string.base':'Meal description must be a string',
                 'any.required':'Meal description is required',
                 'string.length':'Meal description must be 6 digits'
@@ -96,13 +102,13 @@ export default class MealController {
                 'boolean.empty':'Please indicate meal availability for purchasing sake',
                 'any.required':'Please indicate meal availability for purchasing sake'
             }),
-            unit_price: Joi.string().pattern(/^[0-9]+$/).messages({
+            unit_price: Joi.string().pattern(/^[0-9]+$/).trim().messages({
                 'string.base':'Meal price must be a numeric value',
                 'any.required':'Meal price is required',
                 'string.pattern.base':'Only numeric digit is allowed'
             }),
             mealImage: Joi.string(),
-            packaging: Joi.string().required().messages({
+            packaging: Joi.string().required().trim().messages({
                 'string.base': 'Packaging must be an object',
                 'any.required': 'Meal packaging is required',
             })
@@ -112,7 +118,7 @@ export default class MealController {
 
     static validateDeleteMeal(request) {
         const validateMealSchema = Joi.object({
-            mealId: Joi.string().required().messages({
+            mealId: Joi.string().required().trim().messages({
                 'string.base':'Meal Id must be a string',
                 'any.required':'Meal Id is required'
             })

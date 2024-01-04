@@ -132,13 +132,15 @@ export default class UserService {
             let user = await this.getOne({_id: userId})
             if (!user) throw new NotFoundError(`User Id (${userId}) not found`)
 
+            user = user.toObject(); 
             if (user.roles.toLowerCase() == 'vendor') {
                 const vendorInfo = await Vendors.findOne({user: userId})
                 const vendorData = vendorInfo.toObject();
-                delete vendorData.user;
-                user = user.toObject();    
+                delete vendorData.user;   
                 user.vendor = vendorData
-            }
+            } 
+            delete user.password;
+            delete user.transact_pin;
             return user;
         } catch (error) {
             throw error;

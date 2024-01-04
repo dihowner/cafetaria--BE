@@ -50,7 +50,7 @@ export default class WalletController {
     /** Schema Validations **/    
     static validateFundingRequest(request) {
         const walletInSchema = Joi.object({
-            amount: Joi.string().required().pattern(/^[0-9]+$/).messages({
+            amount: Joi.string().required().trim().pattern(/^[0-9]+$/).messages({
                 'string.base':'Amount must be a number',
                 'any.required':'Amount is required',
                 'string.pattern.base':'Only numeric value is allowed'
@@ -61,16 +61,16 @@ export default class WalletController {
 
     static validateWalletUpdate(request) {
         const updateWalletSchema = Joi.object({
-            status: Joi.string().required().messages({
+            status: Joi.string().required().trim().messages({
                 'string.base':'Transaction status must be a string',
                 'string.empty':'Transaction status cannot be empty',
                 'any.required':'Transaction status is required'
             }),
-            tx_ref: Joi.string().messages({
+            tx_ref: Joi.string().trim().messages({
                 'string.base':'Transaction reference must be a string',
                 'string.empty':'Transaction reference cannot be empty'
             }),
-            transaction_id: Joi.string().messages({
+            transaction_id: Joi.string().trim().messages({
                 'string.base':'Transaction reference must be a string',
                 'string.empty':'Transaction reference cannot be empty'
             })

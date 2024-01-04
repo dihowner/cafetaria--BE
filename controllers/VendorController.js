@@ -5,10 +5,17 @@ import VendorService from '../services/VendorService.js';
 export default class VendorController {
     static async getVendor(request, response) {
         try {
-            const getVendor = await VendorService.getOne({_id: request.params.vendorId})
+            const vendorId = request.user.vendor; 
+            const getVendor = await VendorService.getVendor(vendorId)
             return response.status(httpStatusCode.OK).json(getVendor);
         } catch (error) {
-            return response.status(error.status).json({message: error.message});
+            console.log(error);
+            if (error instanceof UnAuthorizedError) {
+                return response.status(httpStatusCode.UNAUTHORIZED).json({ message: error.message });
+            } else {
+                // Handle errors
+                return response.status(httpStatusCode.BAD_REQUEST).json({ message: error.message })
+            }
         }
     }
 

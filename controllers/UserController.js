@@ -126,18 +126,18 @@ export default class UserController {
     }
 
     static updatePasswordSchema = Joi.object({
-        current_password: Joi.string().required().min(5).trim().custom(UserController.checkOldNewPass, 'different').pattern(new RegExp('^[a-zA-Z0-9]{3,30}$')).messages({
+        current_password: Joi.string().required().min(5).trim().custom(UserController.checkOldNewPass, 'different').messages({
             'string.base':'Current password must be a string',
             'string.empty':'Current password cannot be empty',
             'any.required':'Current password is required',
             'any.forbidden': 'Current password must not be the same with new password'
         }),
-        new_password: Joi.string().required().min(5).trim().pattern(new RegExp('^[a-zA-Z0-9]{3,30}$')).messages({
+        new_password: Joi.string().required().min(5).trim().messages({
             'string.base':'New password must be a string',
             'string.empty':'New password cannot be empty',
             'any.required':'New password is required'
         }),
-        confirm_password: Joi.string().required().min(5).trim().pattern(new RegExp('^[a-zA-Z0-9]{3,30}$')).valid(Joi.ref('new_password')).messages({
+        confirm_password: Joi.string().required().min(5).trim().valid(Joi.ref('new_password')).messages({
             'string.base':'Confirm password must be a string',
             'string.empty':'Confirm password cannot be empty',
             'any.required':'Confirm password is required',
@@ -152,12 +152,12 @@ export default class UserController {
             'string.length':'Verification token must be 6 digits',
             'string.pattern.base':'Only numeric digit is allowed'
         }),
-        new_password: Joi.string().required().min(5).trim().pattern(new RegExp('^[a-zA-Z0-9]{3,30}$')).messages({
+        new_password: Joi.string().required().min(5).trim().messages({
             'string.base':'New password must be a string',
             'string.empty':'New password cannot be empty',
             'any.required':'New password is required'
         }),
-        confirm_password: Joi.string().required().min(5).trim().pattern(new RegExp('^[a-zA-Z0-9]{3,30}$')).valid(Joi.ref('new_password')).messages({
+        confirm_password: Joi.string().required().min(5).trim().valid(Joi.ref('new_password')).messages({
             'string.base':'Confirm password must be a string',
             'string.empty':'Confirm password cannot be empty',
             'any.required':'Confirm password is required',

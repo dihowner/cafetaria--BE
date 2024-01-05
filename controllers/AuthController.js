@@ -115,7 +115,7 @@ export default class AuthController {
             'string.empty':'Email address cannot be empty',
             'any.required':'Email address is required'
         }),
-        password: Joi.string().required().trim().min(5).pattern(new RegExp('^[a-zA-Z0-9]{3,30}$')).messages({
+        password: Joi.string().required().trim().min(5).messages({
             'string.base':'Password must be a string',
             'string.empty':'Password cannot be empty',
             'any.required':'Password is required'
@@ -189,7 +189,7 @@ export default class AuthController {
                 'string.empty':'Email address cannot be empty',
                 'any.required':'Email address is required'
             }),
-            password: Joi.string().required().min(5).trim().pattern(new RegExp('^[a-zA-Z0-9]{3,30}$')).messages({
+            password: Joi.string().required().min(5).trim().messages({
                 'string.base':'Password must be a string',
                 'string.empty':'Password cannot be empty',
                 'any.required':'Password is required'

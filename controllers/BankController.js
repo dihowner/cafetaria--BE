@@ -21,7 +21,7 @@ export default class BankController {
             } = request;
 
             const verifyAccount = await BankService.verifyBankAccount(bank_code, account_number)
-            return response.status(httpStatusCode.NOT_FOUND).json(verifyAccount);
+            return response.status(httpStatusCode.OK).json(verifyAccount);
         } catch (error) {
             return response.status(error.status).json({message: error.message});
         }

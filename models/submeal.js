@@ -1,7 +1,5 @@
 import mongoose from 'mongoose';
 
-const subMealCategories = ['Extra Portion', 'Protein', 'Soup', 'Drinks'];
-
 export const subMealSchema = new mongoose.Schema({
     meal: {
         type: mongoose.Schema.Types.ObjectId,
@@ -19,9 +17,9 @@ export const subMealSchema = new mongoose.Schema({
         default: 0
     },
     category: {
-        type: String,
-        enum: subMealCategories,
-        required: true
+        type: mongoose.Schema.Types.ObjectId,
+        required: true,
+        ref: 'MealCategories'
     },
     isAvailable: {
         type: Boolean,

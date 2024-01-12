@@ -1,12 +1,12 @@
-import Joi from 'joi';
 import httpStatusCode from 'http-status-codes'
 import VendorService from '../services/VendorService.js';
+import { UnAuthorizedError } from '../helpers/errorHandler.js';
 
 export default class VendorController {
     static async getVendor(request, response) {
         try {
-            const vendorId = request.user.vendor; 
-            const getVendor = await VendorService.getVendor(vendorId)
+            const user = request.user; 
+            const getVendor = await VendorService.getVendor(user)
             return response.status(httpStatusCode.OK).json(getVendor);
         } catch (error) {
             console.log(error);

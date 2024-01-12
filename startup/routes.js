@@ -7,6 +7,7 @@ import AuthRoute from "../routes/auth.js";
 import UserRoute from "../routes/user.js";
 import WalletRoute from "../routes/wallet.js";
 import MealRoute from "../routes/meal.js";
+import MealCatogoryRoute from "../routes/mealcategory.js";
 import SubMealRoute from "../routes/submeal.js";
 import VendorRoute from "../routes/vendor.js";
 import TrashRoute from "../routes/trash.js";
@@ -24,6 +25,7 @@ const routeApp = function (app) {
     app.use("/api/user/", UserRoute);
     app.use("/api/wallet/", WalletRoute);
     app.use("/api/meals/", MealRoute);
+    app.use("/api/meals/category/", MealCatogoryRoute);
     app.use("/api/submeal/", SubMealRoute);
     app.use("/api/vendor/", VendorRoute);
     app.use("/api/banks/", BankRoute);

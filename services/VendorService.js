@@ -3,6 +3,7 @@ import Vendors from "../models/vendor.js";
 import UserService from "./UserService.js";
 import WalletService from "./WalletService.js";
 import Meal from "../models/meal.js";
+import Marts from "../models/marts.js";
 
 const populateUserData = [{ path: 'user', select: '_id name mobile_number email role' }];
 
@@ -28,10 +29,17 @@ export default class VendorService {
         return allMeals;
     }
 
-    static async getVendor(vendorId) {
-        const vendor = await this.getOne({_id: vendorId})
-        if (!vendor) throw new NotFoundError(`Vendor (${vendorId}) not found`)
-        return vendor;
+    static async getVendor(user) {
+        let userId = user._id
+        let vendorId = user.vendor
+        const retrieveVendor = await this.getOne({_id: vendorId})
+        if (!retrieveVendor) throw new NotFoundError(`Vendor (${vendorId}) not found`)
+        const vendorData = retrieveVendor.toObject();
+
+        const mart = await Marts.findOne({user: userId}).select('_id name address image description');
+        const martInfo = mart == null ? false : mart;
+        vendorData.mart = martInfo
+        return vendorData;
     }
 
     static async getOne(filterQuery) {

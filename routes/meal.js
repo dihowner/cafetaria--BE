@@ -20,5 +20,9 @@ router.put('/:mealId', ValidatorMiddleware.validateObjectIds('mealId'),
                         UploadMiddleware.uploadSingleImage('mealImage'),
                         ValidatorMiddleware.validateRequest(MealController.validateUpdateMeal), MealController.updateMeal)
 
+router.put('/:mealId/activate', ValidatorMiddleware.validateObjectIds('mealId'),
+                        AuthMiddleware.authenticateUserType('vendor'), 
+                        ValidatorMiddleware.validateRequest(MealController.validateAvailability), MealController.updateAvailability)
+
 router.get('/submeal/:mealId', ValidatorMiddleware.validateObjectIds('mealId'), SubMealController.getSubMealByMealId)
 export default router;

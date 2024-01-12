@@ -16,8 +16,8 @@ export default class MartCategoryController {
             const createCategory = await MartCategoryService.createCategory(userId, martId, name)
             return response.status(httpStatusCode.OK).json(createCategory);
         } catch (error) {
-            if (error instanceof UnAuthorizedError) {
-                return response.status(httpStatusCode.UNAUTHORIZED).json({ message: error.message });
+            if (error instanceof NotFoundError) {
+                return response.status(httpStatusCode.NOT_FOUND).json({ message: error.message });
             } else {
                 // Handle errors
                 return response.status(httpStatusCode.BAD_REQUEST).json({ message: error.message })
@@ -34,9 +34,7 @@ export default class MartCategoryController {
             const updateCategory = await MartCategoryService.updateCategory(categoryId, name)
             return response.status(httpStatusCode.OK).json(updateCategory);
         } catch (error) {
-            if (error instanceof UnAuthorizedError) {
-                return response.status(httpStatusCode.UNAUTHORIZED).json({ message: error.message });
-            } else if (error instanceof NotFoundError) {
+            if (error instanceof NotFoundError) {
                 return response.status(httpStatusCode.NOT_FOUND).json({ message: error.message });
             } else {
                 // Handle errors

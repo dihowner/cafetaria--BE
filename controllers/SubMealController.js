@@ -1,8 +1,7 @@
 import Joi from 'joi';
 import httpStatusCode from 'http-status-codes'
 import SubMealService from '../services/SubMealService.js';
-
-const SubCategories = ['Extra Portion', 'Protein', 'Soup', 'Drinks'];
+import { NotFoundError } from '../helpers/errorHandler.js';
 
 export default class SubMealController {
     static async createMeal(request, response) {
@@ -12,7 +11,12 @@ export default class SubMealController {
             const createMeal = await SubMealService.createMeal(mealId, mealData)
             return response.status(httpStatusCode.OK).json(createMeal);
         } catch (error) {
-            return response.status(error.status).json({message: error.message});
+            if (error instanceof NotFoundError) {
+                return response.status(httpStatusCode.NOT_FOUND).json({ message: error.message });
+            } else {
+                // Handle errors
+                return response.status(httpStatusCode.BAD_REQUEST).json({ message: error.message })
+            }
         }
     }
     
@@ -23,7 +27,12 @@ export default class SubMealController {
             const updateMeal = await SubMealService.updateMeal(subMealId, mealData)
             return response.status(httpStatusCode.OK).json(updateMeal);
         } catch (error) {
-            return response.status(error.status).json({message: error.message});
+            if (error instanceof NotFoundError) {
+                return response.status(httpStatusCode.NOT_FOUND).json({ message: error.message });
+            } else {
+                // Handle errors
+                return response.status(httpStatusCode.BAD_REQUEST).json({ message: error.message })
+            }
         }
     }
 
@@ -32,7 +41,12 @@ export default class SubMealController {
             const getSubMeal = await SubMealService.getSubMeal(request.params.subMealId)
             return response.status(httpStatusCode.OK).json(getSubMeal);
         } catch (error) {
-            return response.status(error.status).json({message: error.message});
+            if (error instanceof NotFoundError) {
+                return response.status(httpStatusCode.NOT_FOUND).json({ message: error.message });
+            } else {
+                // Handle errors
+                return response.status(httpStatusCode.BAD_REQUEST).json({ message: error.message })
+            }
         }
     }
 
@@ -41,7 +55,12 @@ export default class SubMealController {
             const deleteSubMeal = await SubMealService.deleteSubMeal(request.params.subMealId)
             return response.status(httpStatusCode.OK).json(deleteSubMeal);
         } catch (error) {
-            return response.status(error.status).json({message: error.message});
+            if (error instanceof NotFoundError) {
+                return response.status(httpStatusCode.NOT_FOUND).json({ message: error.message });
+            } else {
+                // Handle errors
+                return response.status(httpStatusCode.BAD_REQUEST).json({ message: error.message })
+            }
         }
     }
 
@@ -52,7 +71,12 @@ export default class SubMealController {
             const getSubMeals = await SubMealService.getSubMealByMealId(mealId, category)
             return response.status(httpStatusCode.OK).json(getSubMeals);
         } catch (error) {
-            return response.status(error.status).json({message: error.message});
+            if (error instanceof NotFoundError) {
+                return response.status(httpStatusCode.NOT_FOUND).json({ message: error.message });
+            } else {
+                // Handle errors
+                return response.status(httpStatusCode.BAD_REQUEST).json({ message: error.message })
+            }
         }
     }
 
@@ -68,7 +92,7 @@ export default class SubMealController {
                 'any.required':'Meal price is required',
                 'string.pattern.base':'Only numeric digit is allowed'
             }),
-            category: Joi.string().valid(...SubCategories).trim().required(),
+            category: Joi.string().regex(/^[0-9a-fA-F]{24}$/),
             is_available: Joi.boolean().required().messages({
                 'boolean.base':'Availability must be a boolean value',
                 'boolean.empty':'Please indicate availability for purchasing sake',
@@ -90,7 +114,7 @@ export default class SubMealController {
                 'any.required':'Meal price is required',
                 'string.pattern.base':'Only numeric digit is allowed'
             }),
-            category: Joi.string().valid(...SubCategories).trim(),
+            category: Joi.string().regex(/^[0-9a-fA-F]{24}$/),
             is_available: Joi.boolean().messages({
                 'boolean.base':'Availability must be a boolean value',
                 'boolean.empty':'Please indicate availability for purchasing sake',

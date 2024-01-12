@@ -60,7 +60,6 @@ export default class MartCategoryService {
             
             const categories = await MartCategories.find({mart: martId}).sort({name: 1})
             return categories
-
         }
         catch (error) {
             throw error;

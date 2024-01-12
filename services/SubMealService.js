@@ -1,9 +1,10 @@
 import { BadRequestError, NotFoundError } from "../helpers/errorHandler.js";
 import Meal from "../models/meal.js";
+import MealCategories from "../models/mealcategory.js";
 import SubMeals from "../models/submeal.js";
 import MealService from "./MealService.js";
 
-const populateMealData = [{ path: 'meal', select: '_id name vendor' }];
+const populateMealData = [{ path: 'meal', select: '_id name vendor' }, {path: 'category', select: '_id name'}];
 
 export default class SubMealService {
     static model = SubMeals;
@@ -18,6 +19,9 @@ export default class SubMealService {
 
             const isSubMealExist = await this.getOne({meal: mealId, name: name});
             if (isSubMealExist) throw new BadRequestError(`Sub meal name (${name}) already exists for this meal`)
+
+            const isCategoryMealExist = await MealCategories.findOne({_id: category, meal: mealId});
+            if (!isCategoryMealExist) throw new BadRequestError(`Category ID (${category}) does not exists for this meal (${isMealExist.name})`)
         
             let mealData = new SubMeals({
                 name: name,
@@ -41,8 +45,7 @@ export default class SubMealService {
             }
         }
         catch (error) {
-            if (error instanceof NotFoundError) throw new NotFoundError(error.message);
-            if (error instanceof BadRequestError) throw new BadRequestError(error.message);
+            throw error
         }
     }
 
@@ -54,6 +57,12 @@ export default class SubMealService {
 
             const isMealExist = await this.getOne({_id: subMealId});
             if (!isMealExist) throw new NotFoundError(`The given meal id (${subMealId}) does not exists`)
+
+            const meal = isMealExist.meal;
+            let mealId = meal._id
+            let mealName = meal.name
+            const isCategoryMealExist = await MealCategories.findOne({_id: category, meal: mealId});
+            if (!isCategoryMealExist) throw new BadRequestError(`Category ID (${category}) does not exists for this meal (${mealName})`)
 
             const updateMealData = {
                 name: name ?? isMealExist.name, 
@@ -70,8 +79,7 @@ export default class SubMealService {
             }
         }
         catch (error) {
-            if (error instanceof NotFoundError) throw new NotFoundError(error.message);
-            if (error instanceof BadRequestError) throw new BadRequestError(error.message);
+            throw error
         }
     }
 
@@ -82,7 +90,7 @@ export default class SubMealService {
             return subMeal
         }
         catch(error) {
-            if (error instanceof NotFoundError) throw new NotFoundError(error.message);
+            throw error
         }
     }
 
@@ -93,7 +101,7 @@ export default class SubMealService {
             await this.model.deleteOne({_id: subMealId})
         }
         catch(error) {
-            if (error instanceof NotFoundError) throw new NotFoundError(error.message);
+            throw error
         }
     }
 
@@ -110,7 +118,7 @@ export default class SubMealService {
             return subMeals
         }
         catch(error) {
-            if (error instanceof NotFoundError) throw new NotFoundError(error.message);
+            throw error
         }
     }
 

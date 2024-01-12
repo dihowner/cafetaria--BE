@@ -12,7 +12,7 @@ export default class MealController {
             const createMeal = await MealService.createMeal(vendorId, mealData)
             return response.status(httpStatusCode.OK).json(createMeal);
         } catch (error) {
-            return response.status(error.status).json({message: error.message});
+            return response.status(httpStatusCode.BAD_REQUEST).json({ message: error.message })
         }
     }
 
@@ -25,7 +25,12 @@ export default class MealController {
             const deleteMeal = await MealService.deleteMeal(vendorId, mealId)
             return response.status(httpStatusCode.OK).json(deleteMeal);
         } catch (error) {
-            return response.status(error.status).json({message: error.message});
+            if (error instanceof NotFoundError) {
+                return response.status(httpStatusCode.NOT_FOUND).json({ message: error.message });
+            } else {
+                // Handle errors
+                return response.status(httpStatusCode.BAD_REQUEST).json({ message: error.message })
+            }
         }
     }
     
@@ -51,7 +56,31 @@ export default class MealController {
             const updateMeal = await MealService.updateMeal(mealId, mealData)
             return response.status(httpStatusCode.OK).json(updateMeal);
         } catch (error) {
-            return response.status(error.status).json({message: error.message});
+            if (error instanceof NotFoundError) {
+                return response.status(httpStatusCode.NOT_FOUND).json({ message: error.message });
+            } else {
+                // Handle errors
+                return response.status(httpStatusCode.BAD_REQUEST).json({ message: error.message })
+            }
+        }
+    }
+
+    static async updateAvailability(request, response) {
+        try {
+            const {
+                body: { is_available }
+            } = request;
+            const mealId = request.params.mealId;
+
+            const updateMeal = await MealService.updateAvailability(mealId, is_available)
+            return response.status(httpStatusCode.OK).json(updateMeal);
+        } catch (error) {
+            if (error instanceof NotFoundError) {
+                return response.status(httpStatusCode.NOT_FOUND).json({ message: error.message });
+            } else {
+                // Handle errors
+                return response.status(httpStatusCode.BAD_REQUEST).json({ message: error.message })
+            }
         }
     }
 
@@ -111,6 +140,17 @@ export default class MealController {
             packaging: Joi.string().required().trim().messages({
                 'string.base': 'Packaging must be an object',
                 'any.required': 'Meal packaging is required',
+            })
+        })
+        return validateMealSchema.validate(request.body, {abortEarly: false});
+    }
+
+    static validateAvailability(request) {
+        const validateMealSchema = Joi.object({
+            is_available: Joi.boolean().messages({
+                'boolean.base':'Meal availability must be a boolean value',
+                'boolean.empty':'Please indicate meal availability for purchasing sake',
+                'any.required':'Please indicate meal availability for purchasing sake'
             })
         })
         return validateMealSchema.validate(request.body, {abortEarly: false});

@@ -52,7 +52,7 @@ export default class MealService {
             }
         }
         catch (error) {
-            throw new BadRequestError(error.message);
+            throw error;
         }
     }
 
@@ -64,7 +64,7 @@ export default class MealService {
             await SubMeals.deleteMany({meal: mealId})
         }
         catch (error) {
-            if (error instanceof NotFoundError) throw new NotFoundError(error.message);
+            throw error
         }
     }
     
@@ -75,7 +75,7 @@ export default class MealService {
             return meal
         }
         catch(error) {
-            if (error instanceof NotFoundError) throw new NotFoundError(error.message);
+            throw error
         }
     }
 
@@ -114,7 +114,30 @@ export default class MealService {
             }
         }
         catch (error) {
-            throw new BadRequestError(error.message);
+            throw error;
+        }
+    }
+
+    static async updateAvailability(mealId, isAvailable = false) {
+        try {
+
+            const isMealExist = await this.getOne({_id: mealId});
+            if (!isMealExist) throw new NotFoundError(`Meal with the given id (${mealId}) does not exist`)
+
+            const updateMealData = {
+                isAvailable: isAvailable
+            }
+
+            const updateMeal = await this.model.findByIdAndUpdate(mealId, 
+                    { $set: updateMealData }, { new: true, select: 'name vendor isAvailable image' }).populate(populateVendorData);
+            if (!updateMeal) throw new BadRequestError("Error updating meal. Please try again later")
+            return {
+                message: "Meal update request was successful",
+                data: updateMeal
+            }
+        }
+        catch (error) {
+            throw error;
         }
     }
 

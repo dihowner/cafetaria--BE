@@ -264,7 +264,7 @@ export default class AuthService {
             return true;
         }
         catch(error) {
-            return false;
+            throw error;
         }
     }
 }

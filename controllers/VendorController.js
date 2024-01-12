@@ -9,7 +9,6 @@ export default class VendorController {
             const getVendor = await VendorService.getVendor(user)
             return response.status(httpStatusCode.OK).json(getVendor);
         } catch (error) {
-            console.log(error);
             if (error instanceof UnAuthorizedError) {
                 return response.status(httpStatusCode.UNAUTHORIZED).json({ message: error.message });
             } else {

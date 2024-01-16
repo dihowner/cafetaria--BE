@@ -32,9 +32,13 @@ export default class VendorService {
     static async getVendor(user) {
         let userId = user._id
         let vendorId = user.vendor
+
+        const userDetail = await UserService.getOne({_id: userId})
+
         const retrieveVendor = await this.getOne({_id: vendorId})
         if (!retrieveVendor) throw new NotFoundError(`Vendor (${vendorId}) not found`)
         const vendorData = retrieveVendor.toObject();
+        vendorData.bank = userDetail.bank
 
         const mart = await Marts.findOne({user: userId}).select('_id name address image description');
         const martInfo = mart == null ? false : mart;

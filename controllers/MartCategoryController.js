@@ -83,11 +83,11 @@ export default class MartCategoryController {
 
         const validateMartSchema = Joi.object({
             name: isUpdate ? Joi.string().trim().messages({
-                'string.base':'Mart name must be a string',
-                'any.required':'Mart name is required'
+                'string.base':'Mart Category name must be a string',
+                'any.required':'Mart Category name is required'
             }) : Joi.string().required().trim().messages({
-                'string.base':'Mart name must be a string',
-                'any.required':'Mart name is required'
+                'string.base':'Mart Category name must be a string',
+                'any.required':'Mart Category name is required'
             })
         });
         return validateMartSchema.validate(request.body, {abortEarly: false});

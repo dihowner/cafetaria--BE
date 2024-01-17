@@ -91,7 +91,6 @@ export default class MealCategoryController {
             name: Joi.string().min(3).trim().required().messages({
                 'string.base':'Meal name must be a string',
                 'any.required':'Meal name is required',
-                'string.length':'Meal name must be 6 digits'
             })
         })
         return validateMealCategorySchema.validate(request.body, {abortEarly: false});

@@ -85,7 +85,6 @@ export default class SubMealController {
             name: Joi.string().min(3).trim().required().messages({
                 'string.base':'Meal name must be a string',
                 'any.required':'Meal name is required',
-                'string.length':'Meal name must be 6 digits'
             }),
             unit_price: Joi.string().trim().required().pattern(/^[0-9]+$/).messages({
                 'string.base':'Meal price must be a numeric value',
@@ -107,7 +106,6 @@ export default class SubMealController {
             name: Joi.string().min(3).trim().messages({
                 'string.base':'Meal name must be a string',
                 'any.required':'Meal name is required',
-                'string.length':'Meal name must be 6 digits'
             }),
             unit_price: Joi.string().pattern(/^[0-9]+$/).trim().messages({
                 'string.base':'Meal price must be a numeric value',

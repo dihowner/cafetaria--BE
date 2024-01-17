@@ -1,4 +1,5 @@
 import { BadRequestError, NotFoundError, UnAuthorizedError } from "../helpers/errorHandler.js";
+import Grocery from "../models/grocery.js";
 import MartCategories from "../models/mart_category.js";
 import MartService from "./MartService.js";
 
@@ -74,7 +75,7 @@ export default class MartCategoryService {
             if (category.mart.user._id != userId) throw new UnAuthorizedError(`You are not authorized to delete resource`)
 
             await this.model.deleteOne({_id: categoryId})
-
+            await Grocery.deleteMany({martcategory: categoryId})
         }
         catch (error) {
             throw error;

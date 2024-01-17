@@ -89,12 +89,10 @@ export default class MealController {
             name: Joi.string().min(3).trim().required().messages({
                 'string.base':'Meal name must be a string',
                 'any.required':'Meal name is required',
-                'string.length':'Meal name must be 6 digits'
             }),
             description: Joi.string().min(3).trim().required().messages({
                 'string.base':'Meal description must be a string',
                 'any.required':'Meal description is required',
-                'string.length':'Meal description must be 6 digits'
             }),
             is_available: Joi.boolean().required().messages({
                 'boolean.base':'Meal availability must be a boolean value',
@@ -119,12 +117,10 @@ export default class MealController {
             name: Joi.string().min(3).trim().messages({
                 'string.base':'Meal name must be a string',
                 'any.required':'Meal name is required',
-                'string.length':'Meal name must be 6 digits'
             }),
             description: Joi.string().min(3).trim().messages({
                 'string.base':'Meal description must be a string',
-                'any.required':'Meal description is required',
-                'string.length':'Meal description must be 6 digits'
+                'any.required':'Meal description is required'
             }),
             is_available: Joi.boolean().messages({
                 'boolean.base':'Meal availability must be a boolean value',

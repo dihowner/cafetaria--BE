@@ -30,7 +30,7 @@ export default class GroceryCategory {
             const groceryData = request.body;
             groceryData.image = request.file;
             const updateGrocery = await GroceryService.updateGrocery(groceryId, groceryData);
-            return response.json(updateGrocery)
+            return response.status(httpStatusCode.OK).json(updateGrocery)
         } catch (error) {
             if (error instanceof UnAuthorizedError) {
                 return response.status(httpStatusCode.UNAUTHORIZED).json({ message: error.message });

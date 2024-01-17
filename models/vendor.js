@@ -25,6 +25,10 @@ export const vendorSchema = new mongoose.Schema({
         type: String,
         default: null
     },
+    businessHour: {
+        type: Object,
+        required: false
+    },
     created_at: {
         type: Date,
         default: Date.now

@@ -14,7 +14,7 @@ export default class UserController {
             } = request
             const user = request.user;
             const updatePassword = await UserService.modifyPassword(user._id, current_password, new_password)
-            return response.json(updatePassword)
+            return response.status(httpStatusCode.OK).json(updatePassword)
         }
         catch(error) {
             // Handle the specific error types
@@ -30,7 +30,7 @@ export default class UserController {
     static async userStatistics(request , response) {
         try {
             const userStatistics = await UserService.userStatistics(request.params.userId)
-            return response.json(userStatistics)
+            return response.status(httpStatusCode.OK).json(userStatistics)
         }
         catch(error) {
             // Handle the specific error types

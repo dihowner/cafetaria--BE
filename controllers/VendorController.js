@@ -1,3 +1,4 @@
+import Joi from 'joi';
 import httpStatusCode from 'http-status-codes'
 import VendorService from '../services/VendorService.js';
 import { UnAuthorizedError } from '../helpers/errorHandler.js';
@@ -34,5 +35,50 @@ export default class VendorController {
         } catch (error) {
             return response.status(error.status).json({message: error.message});
         }
+    }
+
+    static async updateBusinessHour(request, response) {
+        try {
+            const vendorId = request.user.vendor;
+            const businessHour = request.body;
+            const updateBusinessHour = await VendorService.updateBusinessHour(vendorId, businessHour)
+            return response.status(httpStatusCode.OK).json(updateBusinessHour)
+        } catch (error) {
+            console.log(error);
+            return response.status(error.status).json({message: error.message});
+        }
+    }
+
+    static openingClosingTimeSchema = Joi.object({
+        openingTime: Joi.string().required().trim().messages({
+            'string.base':'Business opening hour must be a string',
+            'string.empty':'Business opening hour cannot be empty',
+            'any.required':'Business opening hour is required'
+        }),
+        closingTime: Joi.string().required().trim().messages({
+            'string.base':'Business closing hour must be a string',
+            'string.empty':'Business closing hour cannot be empty',
+            'any.required':'Business closing hour is required'
+        }),
+    });
+
+    static validateBusinessHourSchema(request) {
+
+        const transformedBody = Object.keys(request.body).reduce((acc, key) => {
+            acc[key.toLowerCase()] = request.body[key];
+            return acc;
+        }, {});
+
+        const validateBusinessHourSchema = Joi.object({
+            sunday: VendorController.openingClosingTimeSchema,
+            monday: VendorController.openingClosingTimeSchema,
+            tuesday: VendorController.openingClosingTimeSchema,
+            wednesday: VendorController.openingClosingTimeSchema,
+            thursday: VendorController.openingClosingTimeSchema,
+            friday: VendorController.openingClosingTimeSchema,
+            saturday: VendorController.openingClosingTimeSchema,
+        }).keys();
+
+        return validateBusinessHourSchema.validate(transformedBody, {abortEarly: false});
     }
 }

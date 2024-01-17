@@ -1,4 +1,4 @@
-import { NotFoundError, UnAuthorizedError } from "../helpers/errorHandler.js";
+import { BadRequestError, NotFoundError, UnAuthorizedError } from "../helpers/errorHandler.js";
 import Vendors from "../models/vendor.js";
 import UserService from "./UserService.js";
 import WalletService from "./WalletService.js";
@@ -44,6 +44,38 @@ export default class VendorService {
         const martInfo = mart == null ? false : mart;
         vendorData.mart = martInfo
         return vendorData;
+    }
+
+    static async updateBusinessHour(vendorId, businessHoursDays) {
+        try {
+            if (!businessHoursDays || Object.keys(businessHoursDays).length === 0) throw new BadRequestError('Please provide a valid opening and closing hour for your business')
+
+            const businessHours = {};
+
+            // Iterate through the received object and set opening and closing times for each day
+            Object.entries(businessHoursDays).forEach(([day, { openingTime, closingTime }]) => {
+                businessHours[day.toLowerCase()] = { openingTime, closingTime };
+            });
+
+            const getVendor = await this.getOne({_id: vendorId})
+            if (!getVendor) throw new NotFoundError(`Vendor (${vendorId}) could not be found`)
+
+            const updateBusinessData = {
+                businessHour: businessHoursDays
+            }
+
+            const updateBusiness = await this.model.findByIdAndUpdate(vendorId, 
+                { $set: updateBusinessData }, { new: true, select: 'name store_name store_address isPhysicalStore store_image' }).populate(populateUserData);
+
+            return {
+                message: 'Business operating hours updated successfully',
+                data: updateBusiness
+            }
+
+        }
+        catch(error) {
+            throw error
+        }
     }
 
     static async getOne(filterQuery) {

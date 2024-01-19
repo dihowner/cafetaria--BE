@@ -2,6 +2,7 @@ import { BadRequestError, NotFoundError } from "../helpers/errorHandler.js";
 import Meal from "../models/meal.js";
 import SubMeals from "../models/submeal.js";
 import filesystem from 'fs'
+import { reformUploadPath } from "../utility/util.js";
 
 const populateVendorData = [{ path: 'vendor', select: '_id store_name' }];
 
@@ -31,7 +32,7 @@ export default class MealService {
                 isAvailable: is_available,
                 unitPrice: unit_price,
                 packaging: parsedPackaging,
-                image: imagePath
+                image: reformUploadPath(imagePath)
             })
             
             const saveMeal = await mealData.save();
@@ -47,7 +48,7 @@ export default class MealService {
                     name: name,
                     isAvailable: is_available,
                     unitPrice: unit_price,
-                    image_path: imagePath
+                    image_path: reformUploadPath(imagePath)
                 }
             }
         }
@@ -99,7 +100,7 @@ export default class MealService {
                 unitPrice: unit_price ?? isMealExist.unitPrice, 
             }
             if (image) {
-                let imagePath = image.path;
+                let imagePath = reformUploadPath(image.path);
                 updateMealData.image = imagePath
             } else {
                 updateMealData.image = isMealExist.image            

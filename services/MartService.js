@@ -2,6 +2,7 @@ import { BadRequestError, NotFoundError, UnAuthorizedError } from "../helpers/er
 import Marts from '../models/marts.js'
 import UserService from "./UserService.js";
 import filesystem from 'fs'
+import { reformUploadPath } from "../utility/util.js";
 
 const populateUserData = [{ path: 'user', select: '_id name email' }];
 
@@ -30,7 +31,7 @@ export default class MartService {
                 name: name,
                 description: description,
                 address: address,
-                image: imagePath
+                image: reformUploadPath(imagePath)
             })
             const createMart = await martData.save();
             if (!createMart) throw new BadRequestError('Error creating mart')
@@ -66,7 +67,7 @@ export default class MartService {
             }
 
             if (image) {
-                let imagePath = image.path;
+                let imagePath = reformUploadPath(image.path);
                 updateMartData.image = imagePath
             } else {
                 updateMartData.image = isMartExist.image            

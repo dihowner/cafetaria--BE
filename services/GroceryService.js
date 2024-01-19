@@ -3,6 +3,7 @@ import Grocery from "../models/grocery.js"
 import filesystem from 'fs'
 import MartService from "./MartService.js";
 import MartCategoryService from "./MartCategoryService.js";
+import { reformUploadPath } from "../utility/util.js";
 
 const populateMartData = [{ path: 'mart', select: '_id name' }, {path: 'martcategory', select: '_id name'}];
 
@@ -38,7 +39,7 @@ export default class GroceryService {
                 martcategory: martcategory,
                 isAvailable: is_available,
                 unitPrice: unit_price,
-                image: imagePath
+                image: reformUploadPath(imagePath)
             })
             
             const saveGrocery = await groceryData.save();
@@ -55,7 +56,7 @@ export default class GroceryService {
                     category: categoryName,
                     isAvailable: is_available,
                     unitPrice: unit_price,
-                    image_path: imagePath
+                    image_path: reformUploadPath(imagePath)
                 }
             }
         }
@@ -94,7 +95,7 @@ export default class GroceryService {
                 unitPrice: unit_price ?? isGroceryExist.unitPrice, 
             }
             if (image) {
-                let imagePath = image.path;
+                let imagePath = reformUploadPath(image.path);
                 updateGroceryData.image = imagePath
             } else {
                 updateGroceryData.image = isGroceryExist.image            

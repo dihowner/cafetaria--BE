@@ -35,3 +35,7 @@ export function explodeString(stringData) {
     const explodedArray = stringData.split(" ");
     return explodedArray;
 }
+
+export function reformUploadPath(uploadPath) {
+    return uploadPath.replace(/uploads[\\|\/]/, '');
+}

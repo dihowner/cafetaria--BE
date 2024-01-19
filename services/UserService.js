@@ -9,6 +9,7 @@ import Vendors from "../models/vendor.js";
 import VendorService from "./VendorService.js";
 import BankService from "./BankService.js";
 import WithdrawalService from "./WithdrawalService.js";
+import { reformUploadPath } from "../utility/util.js";
 
 export default class UserService {
     static model = User;
@@ -79,7 +80,7 @@ export default class UserService {
                 }
                 
                 if (storeImage) {
-                    let imagePath = storeImage.path;
+                    let imagePath = reformUploadPath(storeImage.path);
                     vendorData.store_image = imagePath
                 } else {
                     vendorData.store_image = vendor.store_image            
@@ -90,14 +91,13 @@ export default class UserService {
             const updateUserProfile = await this.updateUser(userId, updateUserData)
 
             if (!updateUserProfile) throw new BadRequestError('Error updating profile')
-            const response = {
+            
+            return {
                 _id: updateUserProfile._id,
                 name: updateUserProfile.name,
                 email: updateUserProfile.email,
                 vendor: user.roles == 'vendor' ? updateVendor : {} 
-            };
-        
-            return response;
+            }
         } catch (error) {
             throw error;
         }

@@ -1,6 +1,7 @@
 import { BadRequestError, NotFoundError } from "../helpers/errorHandler.js";
 import Meal from "../models/meal.js";
 import MealCategory from "../models/mealcategory.js";
+import SubMeals from "../models/submeal.js";
 import MealService from "./MealService.js";
 
 const populateMealData = [{ path: 'meal', select: '_id name' }];
@@ -74,7 +75,12 @@ export default class MealCategoryService {
             const isMealExist = await MealService.getOne({_id: mealId});
             if (!isMealExist) throw new NotFoundError(`The given meal id (${mealId}) does not exists`)
             const categories = await this.model.find({meal: mealId})
-            return categories
+            const getSubMealCategories = await SubMeals.find({meal: mealId, isAvailable: true})
+            return categories.map((category) => ({    
+                id: category._id,
+                name: category.name,
+                submeals:  getSubMealCategories.filter((subMeal) => subMeal.category.equals(category._id))         
+            }));
         }
         catch(error) {
             throw error

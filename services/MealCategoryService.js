@@ -77,7 +77,7 @@ export default class MealCategoryService {
             const categories = await this.model.find({meal: mealId})
             const getSubMealCategories = await SubMeals.find({meal: mealId, isAvailable: true})
             return categories.map((category) => ({    
-                id: category._id,
+                _id: category._id,
                 name: category.name,
                 submeals:  getSubMealCategories.filter((subMeal) => subMeal.category.equals(category._id))         
             }));

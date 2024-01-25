@@ -3,9 +3,10 @@ import Grocery from "../models/grocery.js"
 import filesystem from 'fs'
 import MartService from "./MartService.js";
 import MartCategoryService from "./MartCategoryService.js";
-import { reformUploadPath } from "../utility/util.js";
+import { uploadToCloudinary } from "../utility/util.js";
 
 const populateMartData = [{ path: 'mart', select: '_id name' }, {path: 'martcategory', select: '_id name'}];
+const groceryImageFolder = 'uploads/grocery/';
 
 export default class GroceryService {
     static model = Grocery;
@@ -32,6 +33,8 @@ export default class GroceryService {
                 filesystem.unlinkSync(imagePath)
                 throw new BadRequestError(`Grocery name (${name}) already exists for mart category (${categoryName})`)
             } 
+            
+            const uploadLocalCloud = await uploadToCloudinary(imagePath, groceryImageFolder);
 
             let groceryData = new Grocery({
                 name: name,
@@ -39,15 +42,12 @@ export default class GroceryService {
                 martcategory: martcategory,
                 isAvailable: is_available,
                 unitPrice: unit_price,
-                image: reformUploadPath(imagePath)
+                image: uploadLocalCloud
             })
             
             const saveGrocery = await groceryData.save();
-            if (!saveGrocery) {
-                // Remove the image ASAP....
-                filesystem.unlinkSync(imagePath)
-                throw new BadRequestError('Grocery creation failed. Please try again later')
-            }
+            if (!saveGrocery) throw new BadRequestError('Grocery creation failed. Please try again later')
+            
             return {
                 message: `Grocery (${name}) created successfully`,
                 data: {
@@ -56,7 +56,7 @@ export default class GroceryService {
                     category: categoryName,
                     isAvailable: is_available,
                     unitPrice: unit_price,
-                    image_path: reformUploadPath(imagePath)
+                    image_path: uploadLocalCloud
                 }
             }
         }
@@ -95,8 +95,9 @@ export default class GroceryService {
                 unitPrice: unit_price ?? isGroceryExist.unitPrice, 
             }
             if (image) {
-                let imagePath = reformUploadPath(image.path);
-                updateGroceryData.image = imagePath
+                let imagePath = image.path;
+                const uploadLocalCloud = await uploadToCloudinary(imagePath, martImageFolder);
+                updateGroceryData.image = uploadLocalCloud
             } else {
                 updateGroceryData.image = isGroceryExist.image            
             }

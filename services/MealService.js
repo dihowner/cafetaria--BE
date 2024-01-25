@@ -2,7 +2,7 @@ import { BadRequestError, NotFoundError } from "../helpers/errorHandler.js";
 import Meal from "../models/meal.js";
 import SubMeals from "../models/submeal.js";
 import filesystem from 'fs'
-import { reformUploadPath } from "../utility/util.js";
+import { uploadToCloudinary } from "../utility/util.js";
 
 const populateVendorData = [{ path: 'vendor', select: '_id store_name' }];
 
@@ -22,6 +22,8 @@ export default class MealService {
                 throw new BadRequestError(`Meal name (${name}) already exists for vendor`)
             } 
 
+            const uploadLocalCloud = await uploadToCloudinary(imagePath);
+
             let parsedPackaging = JSON.parse(packaging);
             if (Object.keys(parsedPackaging).length === 0) throw new BadRequestError('The packaging field cannot be an empty object');
 
@@ -32,7 +34,7 @@ export default class MealService {
                 isAvailable: is_available,
                 unitPrice: unit_price,
                 packaging: parsedPackaging,
-                image: reformUploadPath(imagePath)
+                image: uploadLocalCloud
             })
             
             const saveMeal = await mealData.save();
@@ -48,7 +50,7 @@ export default class MealService {
                     name: name,
                     isAvailable: is_available,
                     unitPrice: unit_price,
-                    image_path: reformUploadPath(imagePath)
+                    image_path: uploadLocalCloud
                 }
             }
         }
@@ -100,8 +102,9 @@ export default class MealService {
                 unitPrice: unit_price ?? isMealExist.unitPrice, 
             }
             if (image) {
-                let imagePath = reformUploadPath(image.path);
-                updateMealData.image = imagePath
+                let imagePath = image.path;
+                const uploadLocalCloud = await uploadToCloudinary(imagePath);
+                updateMealData.image = uploadLocalCloud
             } else {
                 updateMealData.image = isMealExist.image            
             }

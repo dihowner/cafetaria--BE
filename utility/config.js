@@ -18,5 +18,6 @@ export const config = {
     support: 'support@cafetaria.ng'
   },
   OTP_EXPIRY_TIME:10, //Minutes
-  SOCIAL_MEDIA_HANDLE: 'peaksystemsng'
+  SOCIAL_MEDIA_HANDLE: 'peaksystemsng',
+  SAVE_FILE_ON_DISK: false
 };

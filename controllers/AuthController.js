@@ -54,6 +54,7 @@ export default class AuthController {
             return response.status(httpStatusCode.OK).json(signIn);
 
         } catch (error) {
+            console.log(error);
             return response.status(error.status).json({message: error.message});
         }
     }

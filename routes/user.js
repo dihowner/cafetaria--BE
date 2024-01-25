@@ -3,6 +3,7 @@ import AuthMiddleware from "../middleware/auth.js";
 import UserController from "../controllers/UserController.js";
 import ValidatorMiddleware from "../middleware/validator.js";
 import UploadMiddleware from "../middleware/upload.js";
+import cloudinary from "../utility/cloudinary.js";
 
 const router = express.Router();
 
@@ -17,10 +18,10 @@ router.post("/change-password", AuthMiddleware.requireLoggedInUser,
                     UserController.modifyPassword
             );
 
-router.put('/profile/update', AuthMiddleware.requireLoggedInUser, UploadMiddleware.uploadSingleImage('storeImage', 'uploads/stores/'), 
-                               ValidatorMiddleware.validateRequestActivity('update_profile', UserController.validateUpdateUser), UserController.updateProfile
+router.put('/profile/update', AuthMiddleware.requireLoggedInUser, UploadMiddleware.uploadSingleImage('storeImage', 'uploads/stores/'),
+                                ValidatorMiddleware.validateRequestActivity('update_profile', UserController.validateUpdateUser), UserController.updateProfile
             );
-            
+        
 router.put("/modify-tx-pin", AuthMiddleware.authenticateUserType('vendor'), 
                     ValidatorMiddleware.validateRequestActivity('update_tx_pin', UserController.validateUpdateUser), 
                     UserController.modifyTxPin

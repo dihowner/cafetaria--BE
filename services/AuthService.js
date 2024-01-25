@@ -3,7 +3,7 @@ import Vendors from "../models/vendor.js";
 import ResetPassword from "../models/reset_password.js";
 import VerifyRegistration from "../models/verify-reg.js";
 import reformNumber from "../utility/number.js"
-import { generateRandomNumber } from "../utility/util.js"
+import { currentDate, generateRandomNumber } from "../utility/util.js"
 import { config } from "../utility/config.js"
 import { BadRequestError, NotFoundError } from "../helpers/errorHandler.js";
 import UserService from "./UserService.js";
@@ -120,12 +120,15 @@ export default class AuthService {
     }
     
     static async signIn(email, password, userRole) {
+        const fileContent = await readFile("mailer/templates/welcomeback.html")
+
         const user = await UserService.getOne({email: email, roles: userRole});
         if(user) {
             const checkLoginPass = await UserService.comparePassword(password, user.password);
             if(!checkLoginPass) throw new BadRequestError("Bad combination of email address or password")
             if (user.is_verified == 'pending') throw new BadRequestError("Your account is pending activation. Kindly check your email inbox or spam folder.")
             if (user.is_verified == 'suspended') throw new BadRequestError("Your account is currently suspended. Kindly reach out to our support to assist you activate your account")
+            
             const bearerToken = await UserService.generateAuthToken(user)
             
             const userId = user._id;
@@ -141,6 +144,20 @@ export default class AuthService {
                 const vendorInfo  = await Vendors.findOne({user: userId});
                 data.vendor_id = vendorInfo._id;
             }
+            
+            // Send email...
+            const mailParams = {
+                replyTo: config.system_mail.no_reply,
+                receiver: user.email,
+                subject: `${config.APP_NAME} Successful Login`
+            }
+
+            const mailData = {
+                customer_name: user.name,
+                loggedDate: currentDate(),
+                supportMail: config.system_mail.support,
+            };
+            await sendEmail(mailData, fileContent, mailParams)
             
             return {
                 message: "Login successful",

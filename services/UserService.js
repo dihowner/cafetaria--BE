@@ -9,7 +9,7 @@ import Vendors from "../models/vendor.js";
 import VendorService from "./VendorService.js";
 import BankService from "./BankService.js";
 import WithdrawalService from "./WithdrawalService.js";
-import { reformUploadPath } from "../utility/util.js";
+import {uploadToCloudinary} from '../utility/util.js'
 
 export default class UserService {
     static model = User;
@@ -34,12 +34,25 @@ export default class UserService {
     };
 
     static async modifyPassword(userId, currentPassword, newPassword) {
+        const fileContent = await readFile("mailer/templates/success-resetpass.html")
+        
         const user = await this.getOne({_id: userId})
         if (!user) throw new UnAuthorizedError()
         const isValidCurrentPassword = await this.comparePassword(currentPassword, user.password)
         if (!isValidCurrentPassword) throw new BadRequestError('Invalid current password supplied')
         const updatePassword = await this.updateUser(userId, { password: await this.hashPassword(newPassword) });
         if (!updatePassword) throw new BadRequestError("Password could not be updated. Please try again later")
+
+        // Send email...
+        const mailParams = {
+            replyTo: config.system_mail.no_reply,
+            receiver: user.email,
+            subject: `Password changed successfully`
+        }
+        const mailData = {
+            customer_name: user.name
+        };
+        await sendEmail(mailData, fileContent, mailParams)
         return {
             message: "Password reset was successful",
             data: updatePassword
@@ -66,6 +79,7 @@ export default class UserService {
                 mobile_number: reformattedMobileNumber ?? user.mobile_number
             }
             let updateVendor;
+            
             if (user.roles == 'vendor') {
                 // store name belongs to another store ?
                 const isStoreNameExist = await VendorService.getOne({user: {$ne: userId}, store_name: store_name});
@@ -80,14 +94,15 @@ export default class UserService {
                 }
                 
                 if (storeImage) {
-                    let imagePath = reformUploadPath(storeImage.path);
-                    vendorData.store_image = imagePath
+                    let filePath = storeImage.path;
+                    const uploadLocalCloud = await uploadToCloudinary(filePath, 'uploads/stores/');
+                    vendorData.store_image = uploadLocalCloud
                 } else {
                     vendorData.store_image = vendor.store_image            
                 }
                 updateVendor = await Vendors.findByIdAndUpdate(vendor._id, { $set: vendorData }, {new: true, select: 'store_name store_address isPhysicalStore'})
             }
-            
+
             const updateUserProfile = await this.updateUser(userId, updateUserData)
 
             if (!updateUserProfile) throw new BadRequestError('Error updating profile')
@@ -149,6 +164,8 @@ export default class UserService {
 
     static async setUpBankAccount(userId, userData) {
         try {
+            const fileContent = await readFile("mailer/templates/bankupdate.html")
+
             const {
                 account_number, transact_pin, bank_code, account_name
             } = userData
@@ -176,6 +193,20 @@ export default class UserService {
             }
             
             const updateBank = await this.updateUser(userId, {bank: updateData}, 'name email bank');
+            if (!updateBank) throw new BadRequestError('Error setting up banking information')
+            
+            // Send email...
+            const mailParams = {
+                replyTo: config.system_mail.no_reply,
+                receiver: user.email,
+                subject: `Profile Update - Bank Account Setup`
+            }
+
+            const mailData = {
+                customer_name: name
+            };
+            await sendEmail(mailData, fileContent, mailParams)
+            
             return {
                 message: 'Bank updated successfully',
                 data: updateBank

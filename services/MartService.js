@@ -2,9 +2,10 @@ import { BadRequestError, NotFoundError, UnAuthorizedError } from "../helpers/er
 import Marts from '../models/marts.js'
 import UserService from "./UserService.js";
 import filesystem from 'fs'
-import { reformUploadPath } from "../utility/util.js";
+import { uploadToCloudinary } from "../utility/util.js";
 
 const populateUserData = [{ path: 'user', select: '_id name email' }];
+const martImageFolder = 'uploads/marts/';
 
 export default class MartService {
     static model = Marts;
@@ -26,12 +27,14 @@ export default class MartService {
                 throw new BadRequestError('You already have an existing mart already')
             } 
 
+            const uploadLocalCloud = await uploadToCloudinary(imagePath, martImageFolder);
+
             let martData = new Marts({
                 user: userId,
                 name: name,
                 description: description,
                 address: address,
-                image: reformUploadPath(imagePath)
+                image: uploadLocalCloud
             })
             const createMart = await martData.save();
             if (!createMart) throw new BadRequestError('Error creating mart')
@@ -67,8 +70,9 @@ export default class MartService {
             }
 
             if (image) {
-                let imagePath = reformUploadPath(image.path);
-                updateMartData.image = imagePath
+                let imagePath = image.path;
+                const uploadLocalCloud = await uploadToCloudinary(imagePath, martImageFolder);
+                updateMartData.image = uploadLocalCloud
             } else {
                 updateMartData.image = isMartExist.image            
             }

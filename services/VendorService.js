@@ -31,18 +31,18 @@ export default class VendorService {
         let vendorMeals;
         switch (statusType) {
             case "all":
-                vendorMeals = await paginate(await Meal.find({vendor: vendorId}), pageOption);
+                vendorMeals = await paginate(await Meal.find({vendor: vendorId}).sort({_id: -1}), pageOption);
             break;
             
             case "active":
-                vendorMeals = await paginate(await Meal.find({vendor: vendorId, isAvailable: true}), pageOption);
+                vendorMeals = await paginate(await Meal.find({vendor: vendorId, isAvailable: true}).sort({_id: -1}), pageOption);
             break;
             
             case "inactive":
-                vendorMeals = await paginate(await Meal.find({vendor: vendorId, isAvailable: false}), pageOption);
+                vendorMeals = await paginate(await Meal.find({vendor: vendorId, isAvailable: false}).sort({_id: -1}), pageOption);
             break;
             default:
-                vendorMeals = await paginate(await Meal.find({vendor: vendorId}), pageOption);
+                vendorMeals = await paginate(await Meal.find({vendor: vendorId}).sort({_id: -1}), pageOption);
         }
         return vendorMeals;
     }

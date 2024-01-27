@@ -97,7 +97,7 @@ export default class WithdrawalService {
             const user = await UserService.getOne({_id: userId, 'roles': 'vendor'})
             if (!user) throw new UnAuthorizedError();
 
-            const histories = await this.model.find({user: userId}).select("_id reference amount status created_at updated_at")
+            const histories = await this.model.find({user: userId}).select("_id reference amount status created_at updated_at").sort({_id: -1})
             return histories;
         }
         catch (error) {

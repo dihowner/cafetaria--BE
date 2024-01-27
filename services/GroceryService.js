@@ -152,7 +152,7 @@ export default class GroceryService {
 
     static async getAllGrocery() {
         try {
-            const grocery = await this.model.find({});
+            const grocery = await this.model.find({}).sort({_id: -1});
             return grocery
         }
         catch (error) {

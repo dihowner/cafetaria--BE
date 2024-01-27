@@ -74,7 +74,7 @@ export default class MealCategoryService {
         try {
             const isMealExist = await MealService.getOne({_id: mealId});
             if (!isMealExist) throw new NotFoundError(`The given meal id (${mealId}) does not exists`)
-            const categories = await this.model.find({meal: mealId})
+            const categories = await this.model.find({meal: mealId}).sort({name: 1})
             const getSubMealCategories = await SubMeals.find({meal: mealId, isAvailable: true})
             return categories.map((category) => ({    
                 _id: category._id,

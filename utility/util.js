@@ -63,7 +63,6 @@ export async function uploadToCloudinary(filePath, storagePath = 'uploads/') {
       try {
           // let upload it to cloudinary
           const uploadToCloudinary = await cloudinary.v2.uploader.upload(filePath, {folder: storagePath});
-          console.log(uploadToCloudinary);
           imagePath = uploadToCloudinary.secure_url
           // Since we are not saving it to local Storage, let's remove the uploaded image asap...
           removeUploadedFile(filePath)

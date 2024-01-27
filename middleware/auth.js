@@ -43,14 +43,27 @@ export default class AuthMiddleWare {
 					status: "error",
 					code: httpStatusCode.UNAUTHORIZED,
 					message: "Authorization token expired",
-				})
+				});
+			} else if (error.name === "JsonWebTokenError") {
+				return res.status(httpStatusCode.UNAUTHORIZED).json({
+					status: "error",
+					code: httpStatusCode.UNAUTHORIZED,
+					message: "Invalid authorization token",
+				});
+			} else if (error.name === "MongoError" && error.code === 11000) {
+				// MongoDB duplicate key error (example: unique index violation)
+				return res.status(httpStatusCode.CONFLICT).json({
+					status: "error",
+					code: httpStatusCode.CONFLICT,
+					message: "Duplicate key error. This resource already exists.",
+				});
+			} else {
+				return res.status(httpStatusCode.INTERNAL_SERVER_ERROR).json({
+					status: "error",
+					code: httpStatusCode.INTERNAL_SERVER_ERROR,
+					message: "Internal server error",
+				});
 			}
-	
-			return res.status(httpStatusCode.UNAUTHORIZED).json({
-				status: "error",
-				code: 401,
-				message: "Failed to authenticate token",
-			})
 		}
 	}
 

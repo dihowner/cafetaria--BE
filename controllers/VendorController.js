@@ -30,7 +30,11 @@ export default class VendorController {
 
     static async getVendorMeals(request, response) {
         try {
-            const getVendorMeals = await VendorService.getVendorMeals(request.params.vendorId)
+            const statusType = !(request.query.status) ? 'all' : request.query.status;
+            const perPage = !(request.query.page) ? 1 : parseInt(request.query.page);
+            const filterOption = {status: statusType, page: perPage}
+            const vendorId = request.params.vendorId;
+            const getVendorMeals = await VendorService.getVendorMeals(vendorId, filterOption)
             return response.status(httpStatusCode.OK).json(getVendorMeals);
         } catch (error) {
             return response.status(error.status).json({message: error.message});

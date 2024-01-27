@@ -4,6 +4,7 @@ import UserService from "./UserService.js";
 import WalletService from "./WalletService.js";
 import Meal from "../models/meal.js";
 import Marts from "../models/marts.js";
+import { paginate } from "../utility/paginate.js";
 
 const populateUserData = [{ path: 'user', select: '_id name mobile_number email role' }];
 
@@ -22,11 +23,28 @@ export default class VendorService {
         }
     }
 
-    static async getVendorMeals(vendorId) {
+    static async getVendorMeals(vendorId, filterOption) {
+        let statusType = filterOption.status;
         const vendor = await this.getOne({_id: vendorId})
+        const pageOption = {page: filterOption.page};
         if (!vendor) throw new NotFoundError(`Vendor ID (${vendorId}) could not be found`)
-        const allMeals = await Meal.find({vendor: vendorId})
-        return allMeals;
+        let vendorMeals;
+        switch (statusType) {
+            case "all":
+                vendorMeals = await paginate(await Meal.find({vendor: vendorId}), pageOption);
+            break;
+            
+            case "active":
+                vendorMeals = await paginate(await Meal.find({vendor: vendorId, isAvailable: true}), pageOption);
+            break;
+            
+            case "inactive":
+                vendorMeals = await paginate(await Meal.find({vendor: vendorId, isAvailable: false}), pageOption);
+            break;
+            default:
+                vendorMeals = await paginate(await Meal.find({vendor: vendorId}), pageOption);
+        }
+        return vendorMeals;
     }
 
     static async getVendor(user) {

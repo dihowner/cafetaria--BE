@@ -1,50 +1,50 @@
-import { BadRequestError, NotFoundError } from "../helpers/errorHandler.js";;
+import { BadRequestError, NotFoundError, UnAuthorizedError } from "../helpers/errorHandler.js";
 import Grocery from "../models/grocery.js"
-import filesystem from 'fs'
-import MartService from "./MartService.js";
-import MartCategoryService from "./MartCategoryService.js";
+import { paginate } from "../utility/paginate.js";
 import { uploadToCloudinary } from "../utility/util.js";
+import GroceryCategoryService from "./GroceryCategoryService.js";
+import MartService from "./MartService.js";
+import filesystem from 'fs'
 
-const populateMartData = [{ path: 'mart', select: '_id name' }, {path: 'martcategory', select: '_id name'}];
+const populateGrocery_MartData = [{ path: 'mart', select: '_id name' }, {path: 'grocerycategory', select: '_id name'}];
 const groceryImageFolder = 'uploads/grocery/';
 
 export default class GroceryService {
     static model = Grocery;
+    
     static async createGrocery(userId, groceryProperties) {
         try {
-
             const {
-                name, martcategory, is_available, unit_price, image
+                name, grocery_category, is_available, unit_price, image
             } = groceryProperties;
-            
+
             const isMartCreated = await MartService.getOne({user: userId});
             if (!isMartCreated) throw new BadRequestError(`You are yet to create a mart store, kindly create one`)
 
             let martId = isMartCreated._id;
+            
+            const isCategoryExist = await GroceryCategoryService.getOne({_id: grocery_category})
+            if (!isCategoryExist) throw new NotFoundError(`Grocery category id (${grocery_category}) could not be found`)
 
-            const isMartCategoryExist = await MartCategoryService.getOne({_id: martcategory, mart: martId})
-            if (!isMartCategoryExist) throw new NotFoundError(`Mart category id (${martcategory}) could not be found for your mart (${isMartCreated.name})`)
-
-            const isGroceryExist = await this.getOne({martcategory: martcategory, name: name});
+            const isGroceryExist = await this.getOne({grocerycategory: grocery_category, name: name});
+            
             let imagePath = image.path;
-            let categoryName = isMartCategoryExist.name;
+            let categoryName = isCategoryExist.name;
             if (isGroceryExist) {
                 // Remove the image ASAP....
                 filesystem.unlinkSync(imagePath)
-                throw new BadRequestError(`Grocery name (${name}) already exists for mart category (${categoryName})`)
+                throw new BadRequestError(`Grocery name (${name}) already exists for category (${categoryName})`)
             } 
-            
-            const uploadLocalCloud = await uploadToCloudinary(imagePath, groceryImageFolder);
 
+            const uploadLocalCloud = await uploadToCloudinary(imagePath, groceryImageFolder);
             let groceryData = new Grocery({
                 name: name,
                 mart: martId,
-                martcategory: martcategory,
+                grocerycategory: grocery_category,
                 isAvailable: is_available,
                 unitPrice: unit_price,
                 image: uploadLocalCloud
             })
-            
             const saveGrocery = await groceryData.save();
             if (!saveGrocery) throw new BadRequestError('Grocery creation failed. Please try again later')
             
@@ -69,41 +69,38 @@ export default class GroceryService {
         try {
 
             const {
-                name, martcategory, is_available, unit_price, image
+                name, grocery_category, is_available, unit_price, image
             } = groceryProperties;
 
             const isGroceryExist = await this.getOne({_id: groceryId});
             if (!isGroceryExist) throw new NotFoundError(`Grocery with the given id (${groceryId}) does not exist`)
-            
             let martId = isGroceryExist.mart._id;
             let martName = isGroceryExist.mart.name;
 
-            // return {_id: martcategory, mart: martId};
+            const isGroceryCategoryExist = await GroceryCategoryService.getOne({_id: grocery_category})
+            if (!isGroceryCategoryExist) throw new NotFoundError(`Grocery category id (${grocery_category}) could not be found`)
 
-            const isMartCategoryExist = await MartCategoryService.getOne({_id: martcategory, mart: martId})
-            if (!isMartCategoryExist) throw new NotFoundError(`Mart category id (${martcategory}) could not be found for your mart (${martName})`)
+            let categoryName = isGroceryCategoryExist.name
 
-            let categoryName = isMartCategoryExist.name
-
-            const isGroceryNameExist = await this.getOne({_id: {$ne: groceryId}, martcategory: martcategory, name: name});
+            const isGroceryNameExist = await this.getOne({_id: {$ne: groceryId}, grocerycategory: grocery_category, name: name});
             if (isGroceryNameExist) throw new BadRequestError(`Grocery (${name}) already exists for category (${categoryName})`)
-            
+
             const updateGroceryData = {
                 name: name ?? isGroceryExist.name, 
-                martcategory: martcategory ?? isGroceryExist.martcategory,  
+                grocerycategory: grocery_category ?? isGroceryExist.grocerycategory,  
                 isAvailable: is_available ?? isGroceryExist.isAvailable, 
                 unitPrice: unit_price ?? isGroceryExist.unitPrice, 
             }
+
             if (image) {
                 let imagePath = image.path;
-                const uploadLocalCloud = await uploadToCloudinary(imagePath, martImageFolder);
+                const uploadLocalCloud = await uploadToCloudinary(imagePath, groceryImageFolder);
                 updateGroceryData.image = uploadLocalCloud
             } else {
                 updateGroceryData.image = isGroceryExist.image            
             }
-
             const updateGrocery = await this.model.findByIdAndUpdate(groceryId, 
-                    { $set: updateGroceryData }, { new: true, select: 'name mart isAvailable image' }).populate(populateMartData);
+                { $set: updateGroceryData }, { new: true, select: 'name mart isAvailable image' }).populate(populateGrocery_MartData);
             if (!updateGrocery) throw new BadRequestError("Error updating grocery. Please try again later")
             return {
                 message: "Grocery update request was successful",
@@ -121,15 +118,15 @@ export default class GroceryService {
             const isGroceryExist = await this.getOne({_id: groceryId});
             if (!isGroceryExist) throw new NotFoundError(`Grocery with the given id (${groceryId}) does not exist`)
 
-            const updateGroceryData = {
-                isAvailable: isAvailable
-            }
-
             const updateGrocery = await this.model.findByIdAndUpdate(groceryId, 
-                    { $set: updateGroceryData }, { new: true, select: 'name mart isAvailable image' }).populate(populateMartData);
+                { 
+                    $set: {
+                        isAvailable: isAvailable
+                    }
+                }, { new: true, select: 'name mart isAvailable image' }).populate(populateGrocery_MartData);
             if (!updateGrocery) throw new BadRequestError("Error updating grocery. Please try again later")
             return {
-                message: "Grocery update request was successful",
+                message: "Grocery availability update request was successful",
                 data: updateGrocery
             }
         }
@@ -150,10 +147,29 @@ export default class GroceryService {
         }
     }
 
-    static async getAllGrocery() {
+    static async getAllGrocery(filterOption) {
         try {
-            const grocery = await this.model.find({}).sort({_id: -1});
-            return grocery
+            let statusType = filterOption.status;
+            const pageOption = {page: filterOption.page};
+
+            let allGrocery;
+            switch (statusType) {
+                case "all":
+                    allGrocery = await paginate( await this.model.find({}).populate(populateGrocery_MartData).sort({_id: -1}), pageOption);
+                break;
+                
+                case "available":
+                    allGrocery = await paginate( await this.model.find({ isAvailable: true }).populate(populateGrocery_MartData).sort({_id: -1}), pageOption);
+                break;
+                
+                case "unavailable":
+                    allGrocery = await paginate( await this.model.find({isAvailable: false}).populate(populateGrocery_MartData).sort({_id: -1}), pageOption);
+                break;
+
+                default:
+                    allGrocery = await paginate( await this.model.find({}).populate(populateGrocery_MartData).sort({_id: -1}), pageOption);
+            }
+            return allGrocery
         }
         catch (error) {
             throw error;
@@ -177,9 +193,9 @@ export default class GroceryService {
         }
     }
 
+
     static async getOne(filterQuery) {
-        const grocery = await this.model.findOne(filterQuery).populate(populateMartData)
+        const grocery = await this.model.findOne(filterQuery).populate(populateGrocery_MartData)
         return grocery || false;
     }
-
 }

@@ -1,7 +1,7 @@
 import Joi from 'joi';
 import httpStatusCode from 'http-status-codes'
 import { NotFoundError, UnAuthorizedError } from '../helpers/errorHandler.js';
-import MartCategoryService from '../services/MartCategoryService.js';
+import MartCategoryService from '../services/GroceryCategoryService.js';
 
 export default class MartCategoryController {
     

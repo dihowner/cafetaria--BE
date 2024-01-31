@@ -1,15 +1,13 @@
 import mongoose from 'mongoose';
 
-export const martCategorySchema = new mongoose.Schema({
+export const rolesSchema = new mongoose.Schema({
     name: {
         type: String,
         required: true,
         minlength: 3
     },
-    mart: {
-        type: mongoose.Schema.Types.ObjectId,
-        required: true,
-        ref: 'Marts'
+    slug: {
+        type: String
     },
     created_at: {
         type: Date,
@@ -21,11 +19,11 @@ export const martCategorySchema = new mongoose.Schema({
     }
 })
 
-martCategorySchema.pre('findOneAndUpdate', function (next) {
+rolesSchema.pre('findOneAndUpdate', function (next) {
     this.set({ updated_at: new Date() });
     next();
 })
 
-const MartCategories = mongoose.model('MartCategories', martCategorySchema);
+const Roles = mongoose.model('Roles', rolesSchema);
 
-export default MartCategories;
+export default Roles;

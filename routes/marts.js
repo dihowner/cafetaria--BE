@@ -15,15 +15,4 @@ router.put('/:martId', AuthMiddleware.authenticateUserType('vendor'), UploadMidd
 
 router.get('/:martId', ValidatorMiddleware.validateObjectIds('martId'), MartController.getMart)
 
-// Mart Categories Route...
-router.post('/add-category/:martId', AuthMiddleware.authenticateUserType('vendor'), ValidatorMiddleware.validateObjectIds('martId'),
-                                     ValidatorMiddleware.validateRequest(MartCategoryController.validateMart), MartCategoryController.createCategory)
-
-router.put('/update-category/:categoryId', AuthMiddleware.authenticateUserType('vendor'), ValidatorMiddleware.validateObjectIds('categoryId'),
-                                     ValidatorMiddleware.validateRequest(MartCategoryController.validateMart), MartCategoryController.updateCategory)
-
-router.get('/mart-category/:martId', ValidatorMiddleware.validateObjectIds('martId'), MartCategoryController.getMartCategories)
-
-router.delete('/:categoryId', AuthMiddleware.authenticateUserType('vendor'), ValidatorMiddleware.validateObjectIds('categoryId'), MartCategoryController.deleteCategory)
-
 export default router;

@@ -6,7 +6,7 @@ import Meal from "../models/meal.js";
 import Marts from "../models/marts.js";
 import { paginate } from "../utility/paginate.js";
 
-const populateUserData = [{ path: 'user', select: '_id name mobile_number email role' }];
+const populateUserData = [{ path: 'user', select: '_id name mobile_number email role is_verified' }];
 
 export default class VendorService {
     static model = Vendors;
@@ -90,6 +90,37 @@ export default class VendorService {
                 data: updateBusiness
             }
 
+        }
+        catch(error) {
+            throw error
+        }
+    }
+
+    static async getAllVendor(filterOption) {
+        try {
+            let statusType = filterOption.status;
+            const pageOption = {page: filterOption.page};
+            
+            let allVendors , vendors;
+            switch (statusType) {
+                case "all":
+                    allVendors = await paginate( await this.model.find({}).populate(populateUserData).sort({_id: -1}), pageOption);
+                break;
+                
+                case "verified":
+                    vendors = await this.model.find({}).populate(populateUserData).sort({_id: -1})
+                    allVendors = await paginate(vendors.filter(vendor => vendor.user.is_verified !== "pending"), pageOption);
+                break;
+                
+                case "unverified":
+                    vendors = await this.model.find({}).populate(populateUserData).sort({_id: -1})
+                    allVendors = await paginate(vendors.filter(vendor => vendor.user.is_verified === "pending"), pageOption);
+                break;
+
+                default:
+                    allVendors = await paginate( await this.model.find({}).populate(populateUserData).sort({_id: -1}), pageOption);
+            }
+            return allVendors
         }
         catch(error) {
             throw error

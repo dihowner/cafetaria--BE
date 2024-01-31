@@ -3,6 +3,7 @@ import Meal from "../models/meal.js";
 import SubMeals from "../models/submeal.js";
 import filesystem from 'fs'
 import { uploadToCloudinary } from "../utility/util.js";
+import { paginate } from "../utility/paginate.js";
 
 const populateVendorData = [{ path: 'vendor', select: '_id store_name' }];
 
@@ -142,6 +143,35 @@ export default class MealService {
         }
         catch (error) {
             throw error;
+        }
+    }
+
+    static async getAllMeal(filterOption) {
+        try {
+            let statusType = filterOption.status;
+            const pageOption = {page: filterOption.page};
+            
+            let allMeals;
+            switch (statusType) {
+                case "all":
+                    allMeals = await paginate( await this.model.find({}).populate(populateVendorData).sort({_id: -1}), pageOption);
+                break;
+                
+                case "available":
+                    allMeals = await paginate( await this.model.find({isAvailable: true}).populate(populateVendorData).sort({_id: -1}), pageOption);
+                break;
+                
+                case "unavailable":
+                    allMeals = await paginate( await this.model.find({isAvailable: false}).populate(populateVendorData).sort({_id: -1}), pageOption);
+                break;
+
+                default:
+                    allMeals = await paginate( await this.model.find({}).populate(populateVendorData).sort({_id: -1}), pageOption);
+            }
+            return allMeals;
+        }
+        catch(error) {
+            throw error
         }
     }
 

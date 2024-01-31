@@ -1,4 +1,5 @@
 import filesystem from 'fs'
+import bcrypt from 'bcrypt'
 import { config } from './config.js';
 import cloudinary from './cloudinary.js';
 import { InternalError } from '../helpers/errorHandler.js';
@@ -19,6 +20,15 @@ export const uniqueReference = function uniqueReference() {
   const todaysDateTime = `${year}${month}${day}${hours}${minutes}`;
   return todaysDateTime + generateRandomNumber(3)
   
+}
+
+export async function comparePassword(password, savedHashed) {
+  return await bcrypt.compare(password, savedHashed)
+}
+
+export async function hashPassword(password) {
+  const salt = await bcrypt.genSalt(10)
+  return await bcrypt.hash(password, salt)
 }
 
 export function generateRandomNumber(length = 6) {
@@ -75,4 +85,8 @@ export async function uploadToCloudinary(filePath, storagePath = 'uploads/') {
         imagePath = reformUploadPath(filePath);
     }
     return imagePath;
+}
+
+export function cleanSpaceLowercase(string) {
+    return string.replace(/\s/g, '').toLowerCase();
 }

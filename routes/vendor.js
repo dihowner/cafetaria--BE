@@ -11,4 +11,5 @@ router.get('/:vendorId/meals', ValidatorMiddleware.validateObjectIds('vendorId')
 router.put('/update-business-hour', AuthMiddleware.authenticateUserType('vendor'), 
                                     ValidatorMiddleware.validateRequest(VendorController.validateBusinessHourSchema), VendorController.updateBusinessHour)
 
+router.get('/all', VendorController.getAllVendor)
 export default router;

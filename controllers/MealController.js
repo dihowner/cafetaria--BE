@@ -84,6 +84,18 @@ export default class MealController {
         }
     }
 
+    static async getAllMeal(request, response) {
+        try {
+            const statusType = !(request.query.status) ? 'all' : request.query.status;
+            const perPage = !(request.query.page) ? 1 : parseInt(request.query.page);
+            const filterOption = {status: statusType, page: perPage}
+            const getMeals = await MealService.getAllMeal(filterOption)
+            return response.status(httpStatusCode.OK).json(getMeals)
+        } catch (error) {
+            return response.status(error.status).json({message: error.message});
+        }
+    }
+
     static validateAddMeal(request) {
         const validateMealSchema = Joi.object({
             name: Joi.string().min(3).trim().required().messages({

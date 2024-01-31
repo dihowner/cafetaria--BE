@@ -1,6 +1,5 @@
 import jwt from "jsonwebtoken";
 import WalletService from "./WalletService.js";
-import bcrypt from 'bcrypt'
 import { config } from "../utility/config.js"
 import User from "../models/user.js";
 import { BadRequestError, NotFoundError, UnAuthorizedError } from "../helpers/errorHandler.js";
@@ -9,7 +8,8 @@ import Vendors from "../models/vendor.js";
 import VendorService from "./VendorService.js";
 import BankService from "./BankService.js";
 import WithdrawalService from "./WithdrawalService.js";
-import {uploadToCloudinary} from '../utility/util.js'
+import { uploadToCloudinary, comparePassword, hashPassword } from '../utility/util.js'
+import { paginate } from "../utility/paginate.js";
 
 export default class UserService {
     static model = User;
@@ -18,7 +18,7 @@ export default class UserService {
                 _id: user._id,
                 role: user.roles,
             },
-            config.JWT_SECRET, { expiresIn: "24h" }
+            config.JWT_SECRET, { expiresIn: "72h" }
         );
     }
 
@@ -38,9 +38,9 @@ export default class UserService {
         
         const user = await this.getOne({_id: userId})
         if (!user) throw new UnAuthorizedError()
-        const isValidCurrentPassword = await this.comparePassword(currentPassword, user.password)
+        const isValidCurrentPassword = await comparePassword(currentPassword, user.password)
         if (!isValidCurrentPassword) throw new BadRequestError('Invalid current password supplied')
-        const updatePassword = await this.updateUser(userId, { password: await this.hashPassword(newPassword) });
+        const updatePassword = await this.updateUser(userId, { password: await hashPassword(newPassword) });
         if (!updatePassword) throw new BadRequestError("Password could not be updated. Please try again later")
 
         // Send email...
@@ -69,7 +69,6 @@ export default class UserService {
             } = userProperties;
 
             const reformattedMobileNumber = mobile_number !== undefined ? reformNumber(mobile_number) : user.mobile_number;
-            // const reformattedMobileNumber = (mobile_number);
             // does email belongs to another user
             const isMobileExist = await this.getOne({_id: {$ne: userId}, mobile_number: reformattedMobileNumber})
             if (isMobileExist) throw new BadRequestError(`Mobile number (${reformattedMobileNumber}) already belongs to another user`)
@@ -217,6 +216,35 @@ export default class UserService {
         }
     }
 
+    static async getAllUser(filterOption) {
+        try {
+            let statusType = filterOption.status;
+            const pageOption = {page: filterOption.page};
+            
+            let users;
+            switch (statusType) {
+                case "all":
+                    users = await paginate( await this.model.find({roles: 'user'}).sort({_id: -1}), pageOption);
+                break;
+                
+                case "verified":
+                    users = await paginate(await this.model.find({roles: 'user', is_verified: 'activated'}).sort({_id: -1}), pageOption);
+                break;
+                
+                case "unverified":
+                    users = await paginate(await this.model.find({roles: 'user', is_verified: 'pending'}).sort({_id: -1}), pageOption);
+                break;
+
+                default:
+                    users = await paginate( await this.model.find({roles: 'user'}).sort({_id: -1}), pageOption);
+            }
+            return users
+        }
+        catch(error) {
+            throw error
+        }
+    }
+
     static async getOne(filterQuery) {
         const user = await this.model.findOne(filterQuery)
         return user || false;
@@ -227,14 +255,4 @@ export default class UserService {
         if(!updateUser) return false;
         return updateUser;
     }
-    
-    static async comparePassword(password, savedHashed) {
-        return await bcrypt.compare(password, savedHashed)
-    }
-
-    static async hashPassword(password) {
-        const salt = await bcrypt.genSalt(10)
-        return await bcrypt.hash(password, salt)
-    }
-
 }

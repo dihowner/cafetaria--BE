@@ -13,6 +13,8 @@ router.post("/add-meal", AuthMiddleware.authenticateUserType('vendor'), UploadMi
 router.delete("/:mealId", ValidatorMiddleware.validateObjectIds('mealId'), AuthMiddleware.authenticateUserType('vendor'), 
                             ValidatorMiddleware.validateRequest(MealController.validateDeleteMeal), MealController.deleteMeal);
 
+router.get('/all', MealController.getAllMeal)
+
 router.get('/:mealId', ValidatorMiddleware.validateObjectIds('mealId'), MealController.getMeal)
 
 router.put('/:mealId', ValidatorMiddleware.validateObjectIds('mealId'),
@@ -25,4 +27,5 @@ router.put('/:mealId/activate', ValidatorMiddleware.validateObjectIds('mealId'),
                         ValidatorMiddleware.validateRequest(MealController.validateAvailability), MealController.updateAvailability)
 
 router.get('/submeal/:mealId', ValidatorMiddleware.validateObjectIds('mealId'), SubMealController.getSubMealByMealId)
+
 export default router;

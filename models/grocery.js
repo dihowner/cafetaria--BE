@@ -11,10 +11,10 @@ export const grocerySchema = new mongoose.Schema({
         required: true,
         ref: 'Marts'
     },
-    martcategory: {
+    grocerycategory: {
         type: mongoose.Schema.Types.ObjectId,
         required: true,
-        ref: 'MartCategories'
+        ref: 'GroceryCategories'
     },
     isAvailable: {
         type: Boolean,

@@ -1,14 +1,16 @@
 import User from "../models/user.js";
+import Admins from "../models/admin.js";
 import Vendors from "../models/vendor.js";
 import ResetPassword from "../models/reset_password.js";
 import VerifyRegistration from "../models/verify-reg.js";
 import reformNumber from "../utility/number.js"
-import { currentDate, generateRandomNumber } from "../utility/util.js"
+import { currentDate, generateRandomNumber, comparePassword, hashPassword } from "../utility/util.js"
 import { config } from "../utility/config.js"
 import { BadRequestError, NotFoundError } from "../helpers/errorHandler.js";
-import UserService from "./UserService.js";
 import { readFile } from "../helpers/fileReader.js";
 import { sendEmail } from "../helpers/sendEmail.js";
+import UserService from "./UserService.js";
+import AdminService from "./AdminService.js";
 
 // Get the current time
 const currentTime = new Date();
@@ -33,7 +35,7 @@ export default class AuthService {
             let userData = new User({
                 name: name,
                 email: email,
-                password: await UserService.hashPassword(password),
+                password: await hashPassword(password),
                 mobile_number: reformNumber(mobile_number),
                 roles: userRole,
                 transact_pin: userRole == 'vendor' ? '000000' : null
@@ -120,11 +122,26 @@ export default class AuthService {
     }
     
     static async signIn(email, password, userRole) {
+        let response;
+        switch(userRole) {
+            case "admin":
+                response = await this.adminSignIn(email, password)
+            break;
+
+            case "user":
+            case "vendor":
+                response = await this.UserVendorSignIn(email, password, userRole)
+            break;
+        }
+        return response;
+    }
+
+    static async UserVendorSignIn(email, password, userRole) {
         const fileContent = await readFile("mailer/templates/welcomeback.html")
 
         const user = await UserService.getOne({email: email, roles: userRole});
         if(user) {
-            const checkLoginPass = await UserService.comparePassword(password, user.password);
+            const checkLoginPass = await comparePassword(password, user.password);
             if(!checkLoginPass) throw new BadRequestError("Bad combination of email address or password")
             if (user.is_verified == 'pending') throw new BadRequestError("Your account is pending activation. Kindly check your email inbox or spam folder.")
             if (user.is_verified == 'suspended') throw new BadRequestError("Your account is currently suspended. Kindly reach out to our support to assist you activate your account")
@@ -246,7 +263,7 @@ export default class AuthService {
 
         const getToken = await ResetPassword.findOne({token: resetToken, status: 'new'})
         if(!getToken) throw new NotFoundError(`Reset token (${resetToken}) could not be found or already used`)
-        const user = await UserService.updateUser(getToken.user_id, { password: await UserService.hashPassword(password) });
+        const user = await UserService.updateUser(getToken.user_id, { password: await hashPassword(password) });
         if(!user) throw new BadRequestError("Error processing request. Please try again")
         await ResetPassword.findByIdAndUpdate(getToken._id, { $set: { status: 'used' } }, {new: true});
         // Send email...
@@ -283,5 +300,28 @@ export default class AuthService {
         catch(error) {
             throw error;
         }
+    }
+
+    /* Admin Auth */
+    static async adminSignIn(email, password) {
+        const admin = await AdminService.getOne({email: email});
+        if(admin) {
+            const checkLoginPass = await comparePassword(password, admin.password);
+            if(!checkLoginPass) throw new BadRequestError("Bad combination of email address or password")
+
+            const bearerToken = await AdminService.generateAuthToken(admin)
+
+            return {
+                message: "Login successful",
+                token: bearerToken,
+                data: {
+                    _id: admin._id,
+                    name: admin.name,
+                    email: admin.email
+                }
+            }
+
+        }
+        throw new BadRequestError('Bad combination of email address or password');
     }
 }

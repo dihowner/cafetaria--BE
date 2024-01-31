@@ -48,7 +48,18 @@ export default class VendorController {
             const updateBusinessHour = await VendorService.updateBusinessHour(vendorId, businessHour)
             return response.status(httpStatusCode.OK).json(updateBusinessHour)
         } catch (error) {
-            console.log(error);
+            return response.status(error.status).json({message: error.message});
+        }
+    }
+
+    static async getAllVendor(request, response) {
+        try {
+            const statusType = !(request.query.status) ? 'all' : request.query.status;
+            const perPage = !(request.query.page) ? 1 : parseInt(request.query.page);
+            const filterOption = {status: statusType, page: perPage}
+            const getVendors = await VendorService.getAllVendor(filterOption)
+            return response.status(httpStatusCode.OK).json(getVendors)
+        } catch (error) {
             return response.status(error.status).json({message: error.message});
         }
     }

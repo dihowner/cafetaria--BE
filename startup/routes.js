@@ -15,6 +15,10 @@ import BankRoute from "../routes/banks.js";
 import WithdrawalRoute from "../routes/withdrawal.js";
 import MartRoute from "../routes/marts.js";
 import GroceryRoute from "../routes/grocery.js";
+import GroceryCategoryRoute from "../routes/grocerycategory.js";
+import RolesRoute from "../routes/roles.js";
+import AdminRoute from "../routes/admin.js";
+import BroadcastRoute from "../routes/broadcast.js";
 
 const routeApp = function (app) {
 	app.use(bodyParser.json())
@@ -33,6 +37,10 @@ const routeApp = function (app) {
     app.use("/api/withdrawal/", WithdrawalRoute);
     app.use("/api/marts/", MartRoute);
     app.use("/api/grocery/", GroceryRoute);
+    app.use("/api/grocery/category/", GroceryCategoryRoute);
+    app.use("/api/admin/", AdminRoute);
+    app.use("/api/broadcast/", BroadcastRoute);
+    app.use("/api/roles/", RolesRoute);
     app.use("/api/trash/", TrashRoute);
 
 	app.all("*", (request, response) => {

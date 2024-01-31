@@ -3,7 +3,7 @@ import httpStatusCode from 'http-status-codes'
 import { NotFoundError, UnAuthorizedError } from '../helpers/errorHandler.js';
 import GroceryService from '../services/GroceryService.js';
 
-export default class GroceryCategory {
+export default class GroceryController {
     
     static async createGrocery(request, response) {
         try {
@@ -80,7 +80,11 @@ export default class GroceryCategory {
 
     static async getAllGrocery(request, response) {
         try {
-            const getGrocery = await GroceryService.getAllGrocery()
+            const statusType = !(request.query.status) ? 'all' : request.query.status;
+            const perPage = !(request.query.page) ? 1 : parseInt(request.query.page);
+            const filterOption = {status: statusType, page: perPage}
+
+            const getGrocery = await GroceryService.getAllGrocery(filterOption)
             return response.status(httpStatusCode.OK).json(getGrocery);
         } catch (error) {
             console.log(error);
@@ -122,9 +126,9 @@ export default class GroceryCategory {
                 'boolean.empty':'Please indicate grocery availability for purchasing sake',
                 'any.required':'Please indicate grocery availability for purchasing sake'
             }),
-            martcategory: Joi.string().regex(/^[0-9a-fA-F]{24}$/).required().messages({
-                'string.base':'Mart category name must be a string',
-                'any.required':'Mart category name is required',
+            grocery_category: Joi.string().regex(/^[0-9a-fA-F]{24}$/).required().messages({
+                'string.base':'Grocery category name must be a string',
+                'any.required':'Grocery category name is required',
             }),
             unit_price: Joi.string().required().trim().pattern(/^[0-9]+$/).messages({
                 'string.base':'Grocery price must be a numeric value',
@@ -134,7 +138,7 @@ export default class GroceryCategory {
         });
         return validateGrocerySchema.validate(request.body, {abortEarly: false});
     }
-
+    
     static validateAvailability(request) {
         const validateGrocerySchema = Joi.object({
             is_available: Joi.boolean().messages({
@@ -155,5 +159,4 @@ export default class GroceryCategory {
         })
         return validateGrocerySchema.validate(request.params, {abortEarly: false});
     }
-
 }

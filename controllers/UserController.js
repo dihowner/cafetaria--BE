@@ -147,9 +147,9 @@ export default class UserController {
     
     static updatePasswordResetSchema = Joi.object({
         token: Joi.string().length(6).pattern(/^[0-9]+$/).trim().required().messages({
-            'string.base':'Verification token must be a string',
-            'any.required':'Verification token is required',
-            'string.length':'Verification token must be 6 digits',
+            'string.base':'Reset token must be a string',
+            'any.required':'Reset token is required',
+            'string.length':'Reset token must be 6 digits',
             'string.pattern.base':'Only numeric digit is allowed'
         }),
         new_password: Joi.string().required().min(5).trim().messages({

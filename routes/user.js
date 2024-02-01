@@ -32,6 +32,6 @@ router.put("/set-bank", AuthMiddleware.authenticateUserType('vendor'),
                     UserController.setUpBankAccount
             );
             
-router.get("/details", AuthMiddleware.requireLoggedInUser, UserController.getUser);
+router.get("/details", AuthMiddleware.authenticateUserType('user'), UserController.getUser);
             
 export default router;

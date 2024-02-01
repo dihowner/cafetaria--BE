@@ -15,11 +15,11 @@ export default class AuthMiddleWare {
 			case 'admin':
 				const admin = await Admins.findById(decodedToken._id)
 				if (!admin) {
-					return res.status(httpStatusCode.BAD_REQUEST).json({
+					return {
 						status: "error",
 						code: httpStatusCode.BAD_REQUEST,
 						message: "Invalid authorization token",
-					})
+					}
 				}
 				req.admin = decodedToken
 			break;
@@ -28,15 +28,15 @@ export default class AuthMiddleWare {
 			case 'vendor':
 				const user = await User.findById(decodedToken._id)
 				if (!user) {
-					return res.status(httpStatusCode.BAD_REQUEST).json({
+					return {
 						status: "error",
 						code: httpStatusCode.BAD_REQUEST,
 						message: "Invalid authorization token",
-					})
+					}
 				}
 				
 				req.user = decodedToken
-				if(user.roles == 'vendor') {
+				if(user.roles === 'vendor') {
 					const vendor = await Vendors.findOne({user: user._id});
 					req.user.vendor = vendor._id;
 				}
@@ -58,7 +58,7 @@ export default class AuthMiddleWare {
 			}
 			
 			const decodedToken = jwt.verify(token, config.JWT_SECRET)
-			await this.assignUser(req, decodedToken);
+			await AuthMiddleWare.assignUser(req, decodedToken);
 			next()
 		}
 		catch(error) {

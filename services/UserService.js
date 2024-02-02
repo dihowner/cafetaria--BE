@@ -10,6 +10,8 @@ import BankService from "./BankService.js";
 import WithdrawalService from "./WithdrawalService.js";
 import { uploadToCloudinary, comparePassword, hashPassword } from '../utility/util.js'
 import { paginate } from "../utility/paginate.js";
+import { readFile } from "../helpers/fileReader.js";
+import { sendEmail } from "../helpers/sendEmail.js";
 
 export default class UserService {
     static model = User;

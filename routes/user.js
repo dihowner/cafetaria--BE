@@ -8,12 +8,8 @@ import cloudinary from "../utility/cloudinary.js";
 const router = express.Router();
 
 router.get("/statistic/:userId", ValidatorMiddleware.validateObjectIds('userId'), UserController.userStatistics);
-router.post("/change-password",  AuthMiddleware.requireLoggedInUser, 
-                                ValidatorMiddleware.validateRequestActivity('update_password', UserController.validateUpdateUser), 
-                                UserController.modifyPassword
-            );
 
-router.post("/change-password", AuthMiddleware.requireLoggedInUser, 
+router.put("/change-password", AuthMiddleware.requireLoggedInUser, 
                     ValidatorMiddleware.validateRequestActivity('update_password', UserController.validateUpdateUser), 
                     UserController.modifyPassword
             );

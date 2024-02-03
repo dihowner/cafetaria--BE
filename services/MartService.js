@@ -78,7 +78,7 @@ export default class MartService {
             }
 
             const updateMart = await this.model.findByIdAndUpdate(martId, 
-                    { $set: updateMartData }, { new: true, select: 'name address' }).populate(populateUserData);
+                    { $set: updateMartData }, { new: true, select: 'name address image' }).populate(populateUserData);
             if (!updateMart) throw new BadRequestError("Error updating mart. Please try again later")
             return {
                 message: "Mart update request was successful",

@@ -5,10 +5,10 @@ import GroceryCategoryController from "../controllers/GroceryCategoryController.
 
 const router = express.Router();
 
+router.get('/all', GroceryCategoryController.getCategories)
 router.post('/add', AuthMiddleware.authenticateUserType('admin'), ValidatorMiddleware.validateRequest(GroceryCategoryController.validateAdd), GroceryCategoryController.createCategory)
 router.put('/:id', AuthMiddleware.authenticateUserType('admin'), ValidatorMiddleware.validateRequest(GroceryCategoryController.validateAdd), GroceryCategoryController.updateCategory)
 router.delete('/:id', AuthMiddleware.authenticateUserType('admin'), ValidatorMiddleware.validateObjectIds('id'), GroceryCategoryController.deleteCategory)
-router.get('/', GroceryCategoryController.getCategories)
 router.get('/:id', AuthMiddleware.authenticateUserType('admin'), ValidatorMiddleware.validateObjectIds('id'), GroceryCategoryController.getCategory)
 
 export default router;

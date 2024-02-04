@@ -72,7 +72,8 @@ export default class GroceryCategoryController {
     static async getCategories(request, response) {
         try {
             const perPage = !(request.query.page) ? 1 : parseInt(request.query.page);
-            const filterOption = {page: perPage}
+            const isSelectOption = !(request.query.isSelectOption) ? false : true;
+            const filterOption = {page: perPage, selectOption: isSelectOption}
             const getCategory = await GroceryCategoryService.getCategories(filterOption)
             return response.status(httpStatusCode.OK).send(getCategory)
         } catch(error) {

@@ -12,7 +12,7 @@ router.post("/:mealId", AuthMiddleware.authenticateUserType('vendor'), Validator
 router.put('/:categoryId', AuthMiddleware.authenticateUserType('vendor'), ValidatorMiddleware.validateObjectIds('categoryId'),
                         ValidatorMiddleware.validateRequest(MealCategoryController.validateCategory), MealCategoryController.updateMealCategory)
 
-router.get('/all/:mealId', ValidatorMiddleware.validateObjectIds('subMealId'), MealCategoryController.getMealCategories)
+router.get('/all/:mealId', ValidatorMiddleware.validateObjectIds('mealId'), MealCategoryController.getMealCategories)
 
 router.get('/:categoryId', ValidatorMiddleware.validateObjectIds('categoryId'), MealCategoryController.getCategory)
 

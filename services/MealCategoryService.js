@@ -70,17 +70,32 @@ export default class MealCategoryService {
         }
     }
 
-    static async getMealCategories(mealId) {
+    static async getMealCategories(mealId, isVendor = true) {
         try {
             const isMealExist = await MealService.getOne({_id: mealId});
             if (!isMealExist) throw new NotFoundError(`The given meal id (${mealId}) does not exists`)
             const categories = await this.model.find({meal: mealId}).sort({name: 1})
             const getSubMealCategories = await SubMeals.find({meal: mealId, isAvailable: true})
-            return categories.map((category) => ({    
-                _id: category._id,
-                name: category.name,
-                submeals:  getSubMealCategories.filter((subMeal) => subMeal.category.equals(category._id))         
-            }));
+
+            if (isVendor) {
+                return categories.map((category) => ({    
+                    _id: category._id,
+                    name: category.name,
+                    submeals:  getSubMealCategories.filter((subMeal) => subMeal.category.equals(category._id))         
+                }));
+            } else {
+                // Filter out categories without submeals
+                const categoriesWithSubmeals = categories.filter(category =>
+                    getSubMealCategories.some(subMeal => subMeal.category.equals(category._id))
+                );
+
+                return categoriesWithSubmeals.map((category) => ({
+                    _id: category._id,
+                    name: category.name,
+                    submeals: getSubMealCategories.filter((subMeal) => subMeal.category.equals(category._id)),
+                }));
+            }
+
         }
         catch(error) {
             throw error

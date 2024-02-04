@@ -44,7 +44,16 @@ export default class MealCategoryController {
     static async getMealCategories(request, response) {
         try {
             const mealId = request.params.mealId;
-            const getCategories = await MealCategoryService.getMealCategories(mealId)
+            //This endppoint is basically for vendor but we need to modify it to suit frontend needs
+            let isVendor = true; 
+            if (!(request.query.isVendor)) {
+                isVendor = true;
+            } else if (request.query.isVendor === "") {
+                isVendor = true;
+            } else {
+                isVendor = false;
+            }
+            const getCategories = await MealCategoryService.getMealCategories(mealId, isVendor)
             return response.status(httpStatusCode.OK).json(getCategories);
         } catch (error) {
             if (error instanceof NotFoundError) {

@@ -73,8 +73,9 @@ export default class GroceryCategoryService {
 
     static async getCategories(filterOption) {
         try {
+            const isSelectOption = filterOption.selectOption;
             const pageOption = {page: filterOption.page};
-            const category = await paginate(await this.model.find({}).populate(populateAdminData).sort({_id: -1}), pageOption);
+            const category = isSelectOption === true ? await this.model.find({}).populate(populateAdminData).sort({_id: -1}) : await paginate(await this.model.find({}).populate(populateAdminData).sort({_id: -1}), pageOption);
             return category
         }
         catch (error) {

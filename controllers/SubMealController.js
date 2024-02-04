@@ -67,8 +67,8 @@ export default class SubMealController {
     static async getSubMealByMealId(request, response) {
         try {
             const mealId = request.params.mealId;
-            const category = request.query.category;
-            const getSubMeals = await SubMealService.getSubMealByMealId(mealId, category)
+            // const category = request.query.category;
+            const getSubMeals = await SubMealService.getSubMealByMealId(mealId)
             return response.status(httpStatusCode.OK).json(getSubMeals);
         } catch (error) {
             if (error instanceof NotFoundError) {

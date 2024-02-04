@@ -3,7 +3,6 @@ import AuthMiddleware from "../middleware/auth.js";
 import ValidatorMiddleware from "../middleware/validator.js";
 import MartController from "../controllers/MartController.js";
 import UploadMiddleware from "../middleware/upload.js";
-import MartCategoryController from "../controllers/MartCategoryController.js";
 
 const router = express.Router();
 

@@ -1,5 +1,4 @@
 import { BadRequestError, NotFoundError } from "../helpers/errorHandler.js";
-import Meal from "../models/meal.js";
 import MealCategory from "../models/mealcategory.js";
 import SubMeals from "../models/submeal.js";
 import MealService from "./MealService.js";

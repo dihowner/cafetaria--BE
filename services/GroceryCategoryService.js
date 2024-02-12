@@ -1,7 +1,6 @@
 import { BadRequestError, NotFoundError, UnAuthorizedError } from "../helpers/errorHandler.js";
 import GroceryCategories from "../models/grocerycategory.js";
 import { paginate } from "../utility/paginate.js";
-// import Grocery from "../models/grocery.js";
 
 const populateAdminData = [ { path: 'created_by', select: '_id name email' }]
 

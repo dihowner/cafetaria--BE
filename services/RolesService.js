@@ -1,7 +1,6 @@
 import Roles from "../models/roles.js";
 import { BadRequestError, NotFoundError, UnAuthorizedError } from "../helpers/errorHandler.js";
 import { cleanSpaceLowercase } from "../utility/util.js";
-import AdminService from "./AdminService.js";
 import Admins from "../models/admin.js";
 
 export default class RolesService {

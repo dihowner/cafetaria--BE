@@ -3,7 +3,6 @@ import AuthMiddleware from "../middleware/auth.js";
 import UserController from "../controllers/UserController.js";
 import ValidatorMiddleware from "../middleware/validator.js";
 import UploadMiddleware from "../middleware/upload.js";
-import cloudinary from "../utility/cloudinary.js";
 
 const router = express.Router();
 

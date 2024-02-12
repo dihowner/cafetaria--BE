@@ -1,8 +1,6 @@
 import jwt from "jsonwebtoken";
 import { config } from "../utility/config.js"
 import Admins from "../models/admin.js";
-import Roles from "../models/roles.js";
-import { BadRequestError, NotFoundError, UnAuthorizedError } from "../helpers/errorHandler.js";
 
 const populateRoleData = [{ path: 'roles', select: '_id name slug' }]
 

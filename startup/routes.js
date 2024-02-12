@@ -3,6 +3,7 @@ import cors from "cors"
 import helmet from "helmet"
 import httpStatusCode from "http-status-codes";
 
+import CartRoute from "../routes/cart.js";
 import AuthRoute from "../routes/auth.js";
 import UserRoute from "../routes/user.js";
 import WalletRoute from "../routes/wallet.js";
@@ -19,6 +20,7 @@ import GroceryCategoryRoute from "../routes/grocerycategory.js";
 import RolesRoute from "../routes/roles.js";
 import AdminRoute from "../routes/admin.js";
 import BroadcastRoute from "../routes/broadcast.js";
+import SettingsRoute from '../routes/settings.js'
 
 const routeApp = function (app) {
 	app.use(bodyParser.json())
@@ -26,6 +28,7 @@ const routeApp = function (app) {
 	app.use(cors())
 	app.use(helmet())
 
+    app.use("/api/cart/", CartRoute);
     app.use("/api/auth/", AuthRoute);
     app.use("/api/user/", UserRoute);
     app.use("/api/wallet/", WalletRoute);
@@ -39,6 +42,7 @@ const routeApp = function (app) {
     app.use("/api/grocery/", GroceryRoute);
     app.use("/api/grocery/category/", GroceryCategoryRoute);
     app.use("/api/admin/", AdminRoute);
+    app.use("/api/settings/", SettingsRoute);
     app.use("/api/broadcast/", BroadcastRoute);
     app.use("/api/roles/", RolesRoute);
     app.use("/api/trash/", TrashRoute);

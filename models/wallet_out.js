@@ -7,8 +7,7 @@ export const walletOutSchema = new mongoose.Schema({
     user_id: {
         type: mongoose.Schema.Types.ObjectId,
         ref: 'User',
-        required: true,
-        minlength: 3
+        required: true
     },
     reference: {
         type: String,

@@ -12,6 +12,7 @@ import { uploadToCloudinary, comparePassword, hashPassword } from '../utility/ut
 import { paginate } from "../utility/paginate.js";
 import { readFile } from "../helpers/fileReader.js";
 import { sendEmail } from "../helpers/sendEmail.js";
+import OrderService from "./OrderService.js";
 
 export default class UserService {
     static model = User;
@@ -27,11 +28,12 @@ export default class UserService {
     static async userStatistics(userId) {
         const user = await this.getOne({_id: userId, roles: 'user'})
         if (!user) throw new UnAuthorizedError()
+        const userOrders = await OrderService.userOrderStatistics(userId);
         return {
-          wallet_balance: await WalletService.getAvailableBalance(userId),
-          total_cart: Math.round(102 * Math.random()),
-          total_order_progress: Math.round(109 * Math.random()),
-          total_order_received: Math.round(105 * Math.random()),
+            wallet_balance: await WalletService.getAvailableBalance(userId),
+            total_cart: userOrders.all_orders,
+            total_order_progress: userOrders.pending_orders,
+            total_order_received: userOrders.delivered_orders,
         }
     };
 

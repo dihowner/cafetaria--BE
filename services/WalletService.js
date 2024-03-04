@@ -32,7 +32,7 @@ export default class WalletService {
         
         let reservePaymentData = {
             amount: amount,
-            currency : "NGN",
+            currency : config.CURRENCY,
             tx_ref : txReference,
             redirect_url : config.FLW_CALLBACK_URL,        
             customer : {
@@ -71,6 +71,21 @@ export default class WalletService {
             }, 
             payment_link: reservePayment.data.link
         }
+    }
+
+    static async createWallet(type = 'inward', walletData) {
+        let instantiateWallet, createWallet;
+        switch (type) {
+            case 'inward':
+                instantiateWallet = new WalletIn(walletData);
+                createWallet = await instantiateWallet.save();
+            break;
+            case 'outward':
+                instantiateWallet = new WalletOut(walletData);
+                createWallet = await instantiateWallet.save();
+            break;
+        }
+        return createWallet;
     }
 
     static async updateWalletIn(transactionId, paymentStatus = 'cancelled', paymentObject = {}) {
@@ -135,8 +150,8 @@ export default class WalletService {
         };
     }
     
-    static async getEscrowBalance(userId) {
-        const inCondition = userId  ? { user_id: new mongoose.Types.ObjectId(userId) } : {}; // Match only if userId is provided
+    static async getEscrowBalance(vendorId) {
+        const inCondition = vendorId  ? { vendor: new mongoose.Types.ObjectId(vendorId) } : {}; // Match only if vendorId is provided
         
         const walletInTotal = await WalletIn.aggregate([
             {
@@ -188,7 +203,39 @@ export default class WalletService {
         return availableBalance;
     }
 
-    // For getting How much was spent or credit by a specific user.
+    static async getVendorAvailableBalance(vendorId) {
+        const outCondition = vendorId ? { $match: { vendor: new mongoose.Types.ObjectId(vendorId), status: APPROVED_STATUS } } : { $match: { status: APPROVED_STATUS } };
+        const inCondition = vendorId  ? { vendor: new mongoose.Types.ObjectId(vendorId) } : {}; // Match only if vendorId is provided
+        
+        const walletInTotal = await WalletIn.aggregate([
+            {
+                $match: {
+                ...inCondition,
+                status: { $in: [APPROVED_STATUS, REFUND_STATUS] }
+                },
+            },
+            {
+                $group: {
+                    _id: null,
+                    totalWalletIn: { $sum: '$amount' },
+                },
+            },
+        ]);
+  
+        const walletOutTotal = await WalletOut.aggregate([
+            outCondition,
+            {
+                $group: {
+                    _id: null,
+                    totalWalletOut: { $sum: '$amount' },
+                },
+            },
+        ]);
+        const availableBalance = (walletInTotal[0]?.totalWalletIn || 0) - (walletOutTotal[0]?.totalWalletOut || 0);
+        return availableBalance;
+    }
+
+    // For getting How much was spent or credit by a specific user, future codes, not in use now...
     static async userWalletOut(userId = "") {
         const matchStage = userId ? { $match: { user_id: new mongoose.Types.ObjectId(userId), status: APPROVED_STATUS } } : { $match: { status: APPROVED_STATUS } };
 

@@ -24,7 +24,7 @@ export default class WithdrawalService {
             if (user.transact_pin != transact_pin) throw new BadRequestError(`Incorrect transaction pin (${transact_pin}) supplied`)
 
             const availableBalance = await WalletService.getAvailableBalance(userId)
-            if (availableBalance < amountWithdraw) throw new BadRequestError(`Insufficient wallet balance (NGN${availableBalance.toFixed(2)})`)
+            if (availableBalance < amountWithdraw) throw new BadRequestError(`Insufficient wallet balance (${config.CURRENCY} ${availableBalance.toFixed(2)})`)
             
             let newBalance = availableBalance - amountWithdraw
             const txReference = uniqueReference();
@@ -58,7 +58,7 @@ export default class WithdrawalService {
             const mailParams = {
                 replyTo: config.system_mail.no_reply,
                 receiver: user.email,
-                subject: `${explodeString(user.name)[0]}, NGN${amountComma} has left your account`
+                subject: `${explodeString(user.name)[0]}, ${config.CURRENCY} ${amountComma} has left your account`
             }
 
             const mailData = {
@@ -75,7 +75,7 @@ export default class WithdrawalService {
             await sendEmail(mailData, fileContent, mailParams)
 
             return {
-                message: `Success. Your withdrawal of NGN${amountComma} was successful.`,
+                message: `Success. Your withdrawal of ${config.CURRENCY} ${amountComma} was successful.`,
                 data: {
                     id: finalizeWithdraw._id,
                     reference: txReference,

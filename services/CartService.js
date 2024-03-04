@@ -1,8 +1,23 @@
 import { BadRequestError, NotFoundError } from "../helpers/errorHandler.js";
 import Carts from "../models/cart.js";
+import { config } from "../utility/config.js";
+import { uniqueReference } from "../utility/util.js";
+import FlutterwaveService from "./FlutterwaveService.js";
 import MealService from "./MealService.js";
 import SettingsService from "./SettingsService.js";
 import SubMealService from "./SubMealService.js";
+import UserService from "./UserService.js";
+import VendorService from "./VendorService.js";
+import Orders from "../models/orders.js";
+import WalletService from "./WalletService.js";
+import { readFile } from "../helpers/fileReader.js";
+import { sendEmail } from "../helpers/sendEmail.js";
+
+const PENDING_STATUS = 'Pending';
+const ACCEPTED_STATUS = 'Accepted';
+const DISPATCHING_STATUS = 'Dispatching';
+const DELIVERED_STATUS = 'Delivered';
+const CANCELLED_STATUS = 'Cancelled';
 
 let cartResponse = {}
 export default class CartService {
@@ -157,17 +172,30 @@ export default class CartService {
     }
 
     static async getCart(cartId) {
-        const mealCarts = await this.model.find({cartId: cartId, submeal: { $exists: false }}).select('name quantity price meal packaging');
-        const subMealCarts = await this.model.find({cartId: cartId, submeal: { $exists: true }});
+        const mainCarts = await this.model.find({cartId: cartId, submeal: { $exists: false }}).select('name quantity price meal packaging deliveryInfo');
 
-        const categorizedCarts = mealCarts.map(meal => {
-            const submeals = subMealCarts.filter(submealCart => submealCart.meal.equals(meal.meal));
-            return { meal, submeals };
+        if (!mainCarts) throw new NotFoundError(`Cart with the given id (${cartId}) could not be found`)
+
+        const mainCartsWithoutDeliveryInfo = mainCarts.map(cart => {
+            const cartObj = cart.toObject();
+            delete cartObj.deliveryInfo;
+            return cartObj;
         });
 
+        // Fetch sub meal carts
+        const subMealCarts = await this.model.find({cartId: cartId, submeal: { $exists: true }});
+
+        // Categorize carts by main meals and their corresponding sub meals
+        const categorizedCarts = mainCartsWithoutDeliveryInfo.map(mainMeal => {
+            const submeals = subMealCarts.filter(submealCart => submealCart.meal.equals(mainMeal.meal));
+            return { meal: mainMeal, submeals };
+        });
+
+        // Calculate subtotal, service charge of the cart
         const subTotal = await this.cartPrice(categorizedCarts)
 
-        return {data: categorizedCarts, cart_price: subTotal};
+        // Return categorized carts and subtotal
+        return {data: categorizedCarts, cart_price: subTotal, deliveryInfo: mainCarts[0].deliveryInfo};
     }
 
     static async cartPrice(cartData) {
@@ -176,16 +204,17 @@ export default class CartService {
             const meal = cart.meal;
             const submeals = cart.submeals;
 
-            let mealPrice = parseInt(meal.quantity) * parseFloat(meal.price)
-            let subMealPrice = 0;
-            let totalPackageAmount = 0;
+            // Calculate price of main meal
+            let mealPrice = parseInt(meal.quantity) * parseFloat(meal.price);
+            // Calculate price of main meal packaging
+            let totalPackageAmount = this.cartPackagingPrice(meal);
 
-            totalPackageAmount += this.cartPackagingPrice(meal) ;
+            // Calculate price of sub meals
+            let subMealPrice = submeals.reduce((total, submeal) => {
+                return total + parseInt(submeal.quantity) * parseFloat(submeal.price);
+            }, 0);
 
-            for (const submeal of submeals) {
-                subMealPrice += parseInt(submeal.quantity) * parseFloat(submeal.price)
-            }
-
+            // Calculate overall price including main meal, sub meals, and packaging
             const overAll = mealPrice + subMealPrice + totalPackageAmount;
             subTotal += overAll;
         }
@@ -201,6 +230,7 @@ export default class CartService {
             }
         }
         
+        // Calculate total price including service charge
         const totalFee = subTotal + serviceCharge;
 
         return {
@@ -208,6 +238,260 @@ export default class CartService {
             service_charge: serviceCharge,
             total: totalFee
         };
+    }
+
+    static async cartPriceByCartId(cartId) {
+        const mainCarts = await this.model.find({cartId: cartId, submeal: { $exists: false }}).select('name quantity price meal packaging');
+        const subMealCarts = await this.model.find({cartId: cartId, submeal: { $exists: true }});
+
+        // Categorize carts by main meals and their corresponding sub meals
+        const categorizedCarts = mainCarts.map(mainMeal => {
+            const submeals = subMealCarts.filter(submealCart => submealCart.meal.equals(mainMeal.meal));
+            return { meal: mainMeal, submeals };
+        });
+
+        // Calculate subtotal, service charge of the cart
+        const subTotal = await this.cartPrice(categorizedCarts)
+        return subTotal;
+    }
+    
+    static async checkOutCart(userId, cartData) {
+
+        const { cartId, payment_method, deliveryInfo} = cartData;
+
+        const mainCarts = await this.model.find({cartId: cartId, submeal: { $exists: false }}).select('name quantity price meal packaging');
+        if (!mainCarts) throw new NotFoundError(`Cart with the given id (${cartId}) could not be found`)
+
+        const cartPrice = await this.cartPriceByCartId(cartId);
+        let totalPrice = cartPrice.total;
+
+        const isUserAuthorized = await UserService.getOne({_id: userId});
+
+        const checkOutFinalizeUrl = new URL(config.CART_VERIFY_PAYMENT_CALLBACK_URL);
+        checkOutFinalizeUrl.searchParams.append('cartId', cartId);
+        checkOutFinalizeUrl.searchParams.append('type', 'checkout');
+
+        const paymentOption = payment_method == 'card' ? ['card'] : ['ussd', 'banktransfer'];
+        
+        // Let update the cart with the delivery information we have...
+        const updateCart = await this.model.updateOne(
+            {cartId: cartId}, {deliveryInfo}
+        )
+
+        const txReference = uniqueReference();
+        let reservePaymentData = {
+            amount: parseFloat(totalPrice),
+            amount: parseFloat(2500),
+            currency : config.CURRENCY,
+            tx_ref : txReference,
+            redirect_url : checkOutFinalizeUrl, 
+            payment_options: paymentOption,
+            customer : {
+                email : isUserAuthorized.email,
+                name : isUserAuthorized.name,
+                phonenumber : isUserAuthorized.mobile_number
+            },
+            customization: {
+                title: config.APP_NAME,
+                description: `${config.APP_NAME} - Checkout Your Order`,
+                logo: config.APP_LOGO
+            }
+        }
+
+        // Generate a payment link for client to pay
+        const reservePayment = await FlutterwaveService.generatePaymentLink(reservePaymentData)
+        // Payment reserving failed...
+        if (reservePayment.error) throw new BadRequestError(reservePayment.error)
+        return reservePayment
+
+    }
+
+    static async verifyCartPayment(paymentData) {
+        const {
+            cartId, type, status = 'failed', tx_ref, transaction_id
+        } = paymentData;
+        
+        if (type == 'checkout' && status.toLowerCase() == 'successful') {
+            const referenceId = tx_ref;
+            try {
+                const verifyPayment = await FlutterwaveService.verifyPayment(transaction_id);
+                let verifyPaymentData = verifyPayment.data;
+                if (verifyPayment.status === "success" && verifyPayment.data.status === "successful" && verifyPaymentData.tx_ref == referenceId) {
+                    const getCart = await this.getCart(cartId)
+                    const orderDetail = getCart.data
+                    const userEmail = verifyPaymentData.customer.email
+                    
+                    if (!userEmail) throw new BadRequestError(`Customer email not found in payment data. Kindly inform admin. Payment Reference : ${referenceId}`)
+                    
+                    const user = await UserService.getOne({email: userEmail})
+                    if (!user) throw new BadRequestError(`User not found with provided email. Kindly inform admin. Payment Reference : ${referenceId}`)
+                    
+                    // Process payment and create order
+                    const paymentData = {
+                        reference : referenceId, 
+                        transactionId : transaction_id,
+                        amountPaid: verifyPaymentData.amount
+                    }
+
+                    const orderData = await this.createOrder(user, getCart, orderDetail, paymentData);
+    
+                    return {
+                        message: 'Order received successfully. You will be notified shortly of your order delivery',
+                        data: orderData
+                    }
+                }
+                throw new BadRequestError('Payment failed, please try again')
+            } catch (error) {
+                throw new BadRequestError('Payment failed. ' + error.message);
+            }
+        }
+        throw new BadRequestError('Payment failed, please try again')
+    }
+
+    static async createOrder(user, getCart, orderDetail, paymentInfo) {
+        const userOrderHTML = await readFile("mailer/templates/order-received.html")
+        const vendorOrderHTML = await readFile("mailer/templates/vendor-order-received.html")
+
+        const userId = user._id;
+
+        const firstMealData = getCart.data[0].meal;
+        const mealId = firstMealData.meal; //Get the first meal from the array of meals to retrieve the vendor...
+        const deliveryInfo = getCart.deliveryInfo
+        const mealInfo = await MealService.getOne({_id: mealId})
+        const vendorId = mealInfo.vendor?._id;
+        const cartPrice = getCart.cart_price;
+        const referenceId = paymentInfo.reference
+        const subTotal = parseFloat(cartPrice.subtotal); // Vendor price
+        const totalPrice = parseFloat(cartPrice.total); // amount with service fee & delivery fee
+        const serviceCharge = parseFloat(cartPrice.service_charge); // service fee & delivery fee
+        const deliveryAddress = deliveryInfo.address;
+        const vendorData = await VendorService.getOne({_id: vendorId});
+
+        const userMailData = {
+            customer_name: user.name,
+            order_id: referenceId,
+            order_total: totalPrice.toLocaleString(),
+            payment_status: "<strong style='color: green;'>PAID</strong>",
+            order_details: this.generateMealTable(getCart.data)
+        };
+
+        const userMailParams = {
+            replyTo: config.system_mail.no_reply,
+            receiver: user.email,
+            subject: `Order received successfully`
+        }
+
+        const vendorMailData = {
+            vendor: vendorData.store_name,
+            customer_name: user.name,
+            delivery_address: deliveryAddress,
+            order_id: referenceId,
+            order_total: subTotal.toLocaleString(),
+            payment_status: "<strong style='color: green;'>PAID</strong>",
+            order_details: this.generateMealTable(getCart.data)
+        };
+
+        const vendorMailParams = {
+            replyTo: config.system_mail.no_reply,
+            receiver: vendorData.user.email,
+            subject: `New Meal Order (${referenceId}) Notification`
+        }
+
+        // Incase of wallet system is being added later
+        const currentUserBlc = parseFloat(await WalletService.getAvailableBalance(userId))
+        const amountPaid = parseFloat(paymentInfo.amountPaid);
+        const newUserBalance = parseFloat(currentUserBlc) + parseFloat(amountPaid);
+
+        // For future sake, wallet system has been implemented already...
+        // Let's save the money that was paid into the user's wallet and deduct it immediately
+        const userWalletInData = {
+            user_id: userId,
+            reference: referenceId,
+            external_reference: paymentInfo.transactionId,
+            old_balance: currentUserBlc,
+            amount: amountPaid,
+            new_balance: newUserBalance,
+            status: 'successful'
+        }
+
+        const outBalance = parseFloat(newUserBalance) - parseFloat(amountPaid);
+        const userWalletOutData = {
+            user_id: userId,
+            reference: referenceId,
+            old_balance: newUserBalance,
+            amount: amountPaid,
+            new_balance: outBalance,
+            status: 'successful'
+        }
+
+        // Let's create a wallet in data for the vendor but in escrow format, ie money is not paid immediately to the vendor...
+
+        // Incase of wallet system is being added later
+        // old_balance and new_balance of the vendor was set to zero 
+        // because it's not in their wallet yet, once the meal is approved then we update with valid record
+
+        const vendorWalletInData = {
+            vendor: vendorId,
+            reference: referenceId,
+            external_reference: paymentInfo.transactionId,
+            old_balance: 0,
+            amount: subTotal,
+            new_balance: 0,
+            status: 'escrow'
+        }
+
+        // create the order...
+        let orderData = new Orders({
+            orderId: referenceId,
+            user: userId,
+            vendor: vendorId,
+            orderDetail: orderDetail,
+            subTotal: subTotal,
+            serviceCharge: serviceCharge,
+            total: totalPrice,
+            deliveryStatus: PENDING_STATUS,
+            paymentStatus: 'Paid',
+            deliveryInformation: deliveryInfo
+        } )              
+        
+        const createOrder = await orderData.save();
+        if (!createOrder) throw new BadRequestError(`Error creating order, kindly notify admin`);
+        await Promise.all([
+            WalletService.createWallet('inward', userWalletInData),
+            WalletService.createWallet('outward', userWalletOutData),
+            WalletService.createWallet('inward', vendorWalletInData),
+            sendEmail(userMailData, userOrderHTML, userMailParams),
+            sendEmail(vendorMailData, vendorOrderHTML, vendorMailParams)
+        ]);
+        
+        return {
+            _id: createOrder._id,
+            orderId: referenceId,
+            total: parseFloat(totalPrice),
+            deliveryStatus: PENDING_STATUS,
+            paymentStatus: 'Paid'
+        };
+    }
+
+    static generateMealTable (orderData) {
+        let listItems = '';
+        orderData.forEach(item => {
+            let mealName = item.meal.name;
+            let quantity = item.meal.quantity;
+            let submealNames = item.submeals.map(submeal => submeal.name).join(', ');
+            
+            let submeals = item.submeals.map(submeal => {
+                return `${submeal.name} (${submeal.quantity})`;
+            }).join(', ');
+
+            let listItem = `<li><strong>Meal:</strong> ${mealName} (${quantity})</li>`;
+            if (submealNames) {
+                listItem += `<li><strong>Submeals: </strong> ${submeals}</li>`;
+            }
+            listItems += listItem;
+        });
+
+        return `<ul style='list-style-type: none'>${listItems}</ul>`;
     }
 
     static cartPackagingPrice(meal) {
@@ -232,4 +516,5 @@ export default class CartService {
         const cart = await this.model.findOne(filterQuery)
         return cart || false;
     }
+        
 }

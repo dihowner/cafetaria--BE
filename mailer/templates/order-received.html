@@ -1,0 +1,45 @@
+<body style="background-color: #f3f3f3;">
+  <table border="0" cellpadding="0" cellspacing="0" width="100%" style="margin-top: 2%">
+    <tr>
+      <td align="center" bgcolor="#f3f3f3">
+        <table border="0" cellpadding="0" cellspacing="0" width="100%" style="max-width: 600px;">
+          <tr>
+            <td align="left" bgcolor="#ffffff" style="padding: 36px 24px 0; font-family: Helvetica, Arial, sans-serif; border-top: 3px solid #ff9c06;">
+               
+            </td>
+          </tr>
+        </table>
+      </td>
+    </tr>
+    <tr>
+      <td align="center" bgcolor="#f3f3f3">
+        <table border="0" cellpadding="0" cellspacing="0" width="100%" style="max-width: 600px;">
+          <tr>
+            <td align="left" bgcolor="#ffffff" style="padding: 24px; font-family: Helvetica, Arial, sans-serif; font-size: 16px; line-height: 24px;">
+              <p style="margin: 0;">
+				      Dear <b>{{customer_name}}, </b> <br><br>
+              Thank you for your order. We're excited to confirm that your order has been received and is currently being processed. Below are the details of your order:
+              <br><br>
+
+              Order ID: <strong>{{order_id}}</strong> <br><br>
+              
+              {{{order_details}}}
+              
+              <br><br>
+              Payment Status: {{{payment_status}}}<br>
+              Order Total: <strong style="color: #000">NGN {{order_total}}</strong> <br><br>
+              <br>
+              If you have any questions or concerns regarding your order, feel free to contact our customer support team at <a href="mailto:{{supportemail}}">{{supportemail}}</a>.
+              Please note that this email is a confirmation of receipt and does not indicate that your order has been shipped.
+              <br><br>
+              Best regards,
+              <br>
+              The {{app_name}} Team
+			      </p>
+            </td>
+          </tr>
+        </table>
+      </td>
+    </tr>
+  </table>
+</body>

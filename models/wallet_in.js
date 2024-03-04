@@ -1,14 +1,22 @@
 import mongoose from 'mongoose';
 import Joi from 'joi';
 
-const walletStatusEnum = ['pending', 'successful', 'refunded', 'cancelled', 'failed'];
+const walletStatusEnum = ['pending', 'escrow', 'successful', 'refunded', 'cancelled', 'failed'];
 
 export const walletInSchema = new mongoose.Schema({
     user_id: {
         type: mongoose.Schema.Types.ObjectId,
         ref: 'User',
+        required: function() {
+            return !this.vendor; // Require user_id if vendor is not provided
+        }
+    },
+    vendor: {
+        type: mongoose.Schema.Types.ObjectId,
         required: true,
-        minlength: 3
+        required: function() {
+            return !this.user_id; // Require user_id if vendor is not provided
+        }
     },
     reference: {
         type: String,

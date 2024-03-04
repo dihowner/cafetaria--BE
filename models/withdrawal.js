@@ -6,8 +6,7 @@ export const withdrawalSchema = new mongoose.Schema({
     user: {
         type: mongoose.Schema.Types.ObjectId,
         ref: 'User',
-        required: true,
-        minlength: 3
+        required: true
     },
     wallet: {
         type: mongoose.Schema.Types.ObjectId,

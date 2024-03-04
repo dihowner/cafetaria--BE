@@ -1,10 +1,11 @@
-import { BadRequestError, NotFoundError, UnAuthorizedError } from "../helpers/errorHandler.js";
+import { BadRequestError, NotFoundError } from "../helpers/errorHandler.js";
 import Vendors from "../models/vendor.js";
 import UserService from "./UserService.js";
 import WalletService from "./WalletService.js";
 import Meal from "../models/meal.js";
 import Marts from "../models/marts.js";
 import { paginate } from "../utility/paginate.js";
+import OrderService from "./OrderService.js";
 
 const populateUserData = [{ path: 'user', select: '_id name mobile_number email role is_verified' }];
 
@@ -12,14 +13,16 @@ export default class VendorService {
     static model = Vendors;
 
     static async vendorStats(vendorId) {
-        const user = await UserService.getOne({_id: vendorId, roles: 'vendor'})
-        if (!user) throw new UnAuthorizedError()
+        const vendor = await this.getOne({_id: vendorId})
+        if (!vendor) throw new NotFoundError(`Vendor ID (${vendorId}) could not be found`)
+        const vendorOrders = await OrderService.vendorOrderStatistics(vendorId);
         return {
-            wallet_balance: await WalletService.getAvailableBalance(vendorId),
+            wallet_balance: await WalletService.getVendorAvailableBalance(vendorId),
             pending_wallet_balance: await WalletService.getEscrowBalance(vendorId),
-        //     total_cart: Math.round(102 * Math.random()),
-        //     total_order_progress: Math.round(109 * Math.random()),
-        //     total_order_received: Math.round(105 * Math.random()),
+            total_cart: vendorOrders.all_orders,
+            total_order_pending: vendorOrders.pending_orders,
+            total_order_dispatched: vendorOrders.dispatched_orders,
+            total_order_delivered: vendorOrders.delivered_orders
         }
     }
 

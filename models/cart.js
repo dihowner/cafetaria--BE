@@ -50,6 +50,9 @@ export const cartSchema = new mongoose.Schema({
         default: 'meal',
         required: false
     },
+    deliveryInfo: {
+        type: Object
+    },
     created_at: {
         type: Date,
         default: Date.now

@@ -6,6 +6,7 @@ export const config = {
   APP_NAME: process.env.APP_NAME,
   URL: `http://${process.env.HOST}:${process.env.PORT}`,
   FLW_CALLBACK_URL: `https://cafeteria-ekep.onrender.com/api/wallet/verify-payment`,
+  CART_VERIFY_PAYMENT_CALLBACK_URL: `https://cafeteria-ekep.onrender.com/api/cart/verifycart-payment`,
   // FLW_CALLBACK_URL: `http://${process.env.HOST}:${process.env.PORT}/api/wallet/verify-payment`,
   HOST: process.env.HOST,
   PORT: process.env.PORT,
@@ -19,5 +20,6 @@ export const config = {
   },
   OTP_EXPIRY_TIME:10, //Minutes
   SOCIAL_MEDIA_HANDLE: 'peaksystemsng',
-  SAVE_FILE_ON_DISK: false
+  SAVE_FILE_ON_DISK: false,
+  CURRENCY: 'NGN'
 };

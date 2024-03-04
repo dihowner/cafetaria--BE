@@ -4,6 +4,7 @@ import helmet from "helmet"
 import httpStatusCode from "http-status-codes";
 
 import CartRoute from "../routes/cart.js";
+import OrderRoutes from "../routes/orders.js";
 import AuthRoute from "../routes/auth.js";
 import UserRoute from "../routes/user.js";
 import WalletRoute from "../routes/wallet.js";
@@ -29,6 +30,7 @@ const routeApp = function (app) {
 	app.use(helmet())
 
     app.use("/api/cart/", CartRoute);
+    app.use("/api/orders/", OrderRoutes);
     app.use("/api/auth/", AuthRoute);
     app.use("/api/user/", UserRoute);
     app.use("/api/wallet/", WalletRoute);

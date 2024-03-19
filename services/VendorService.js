@@ -47,7 +47,20 @@ export default class VendorService {
             default:
                 vendorMeals = await paginate(await Meal.find({vendor: vendorId}).sort({_id: -1}), pageOption);
         }
-        return vendorMeals;
+        
+        const vendorUser = vendor.user;
+        const vendorData = {
+            user_id: vendorUser._id,
+            vendor_id: vendorId,
+            name: vendorUser.name,
+            store_name: vendor.store_name,
+            store_logo: vendor.store_image,
+            is_opened: true
+        }
+        return {
+            vendor: vendorData,
+            meals: vendorMeals
+        };
     }
 
     static async getVendor(user) {

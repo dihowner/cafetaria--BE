@@ -66,7 +66,7 @@ export default class MealService {
         try {
             const isMealExist = await this.getOne({vendor: vendorId, _id: mealId});
             if (!isMealExist) throw new NotFoundError(`Meal with given id (${mealId}) could not be found`)
-            await this.model.deleteOne({_id: mealId})
+            await Meal.deleteOne({_id: mealId})
             await SubMeals.deleteMany({meal: mealId})
         }
         catch (error) {

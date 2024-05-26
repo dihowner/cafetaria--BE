@@ -120,10 +120,10 @@ export default class MealController {
                 'string.base': 'Packaging must be an object',
                 'any.required': 'Meal packaging is required',
             }),
-            category: Joi.array().required().messages({
-                'array.empty': 'category cannot be empty, create categories for this meal or choose from the existing categories',
-                'any.required': 'Please choose categories fro this meal'
-            })
+            // category: Joi.array().required().messages({
+            //     'array.empty': 'category cannot be empty, create categories for this meal or choose from the existing categories',
+            //     'any.required': 'Please choose categories for this meal'
+            // })
         })
         return validateMealSchema.validate(request.body, {abortEarly: false});
     }

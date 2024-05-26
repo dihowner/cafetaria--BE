@@ -50,6 +50,10 @@ export default class SubMealController {
         }
     }
 
+    // static async getSubMealByMealId(request, response) {
+
+    // }
+
     static async deleteSubMeal(request, response) {
         try {
             const deleteSubMeal = await SubMealService.deleteSubMeal(request.params.subMealId)

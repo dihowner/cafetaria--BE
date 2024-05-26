@@ -2,6 +2,8 @@ import express from "express";
 import bootstrap from "./bootstrap.js";
 import { fileURLToPath } from 'url';
 import path, { dirname, join } from 'path';
+import dotenv from 'dotenv'
+dotenv.config();
 
 const app = express();
 const __filename = fileURLToPath(import.meta.url);

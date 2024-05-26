@@ -33,6 +33,11 @@ export const mealSchema = new mongoose.Schema({
 		type: String,
         required: true,
 	},
+    category: [{
+        type: mongoose.Types.ObjectId,
+        ref: 'MealCategories',
+        required: true
+    }],
     created_at: {
         type: Date,
         default: Date.now

@@ -12,9 +12,11 @@ router.post("/add-new/:mealId", AuthMiddleware.authenticateUserType('vendor'), V
 router.put('/:subMealId', AuthMiddleware.authenticateUserType('vendor'), ValidatorMiddleware.validateObjectIds('subMealId'),
                         ValidatorMiddleware.validateRequest(SubMealController.validateUpdateMeal), SubMealController.updateMeal)
 
-router.get('/:subMealId', ValidatorMiddleware.validateObjectIds('subMealId'), SubMealController.getSubMeal)
+router.get('/:subMealId', ValidatorMiddleware.validateObjectIds('subMealId'), SubMealController.getSubMeal);
 
 router.delete("/:subMealId", AuthMiddleware.authenticateUserType('vendor'), ValidatorMiddleware.validateObjectIds('subMealId'),
                                 ValidatorMiddleware.validateRequest(SubMealController.validateDeleteMeal), SubMealController.deleteSubMeal);
+
+router.get("/:mealId", SubMealController.getSubMealByMealId)
 
 export default router;

@@ -34,7 +34,7 @@ export default class MealService {
                 description: description,
                 isAvailable: is_available,
                 unitPrice: unit_price,
-                packaging: parsedPackaging,
+                packaging: packaging,
                 image: uploadLocalCloud,
                 category: category
             })

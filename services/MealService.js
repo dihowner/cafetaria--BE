@@ -51,8 +51,7 @@ export default class MealService {
                     name: name,
                     isAvailable: is_available,
                     unitPrice: unit_price,
-                    image_path: uploadLocalCloud,
-                    category: category
+                    image_path: uploadLocalCloud
                 }
             }
         }

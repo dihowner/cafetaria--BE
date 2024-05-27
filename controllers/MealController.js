@@ -23,7 +23,7 @@ export default class MealController {
             } = request;
             const vendorId = request.user.vendor;
             const deleteMeal = await MealService.deleteMeal(vendorId, mealId)
-            return response.status(httpStatusCode.OK).json(deleteMeal);
+            return response.status(httpStatusCode.OK).json("Meal deleted successfully");
         } catch (error) {
             if (error instanceof NotFoundError) {
                 return response.status(httpStatusCode.NOT_FOUND).json({ message: error.message });

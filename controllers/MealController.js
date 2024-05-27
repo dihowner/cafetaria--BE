@@ -119,9 +119,6 @@ export default class MealController {
             packaging: Joi.string().required().trim().messages({
                 'string.base': 'Packaging must be an object',
                 'any.required': 'Meal packaging is required',
-            }),
-            category: Joi.array().messages({
-                'array.base': 'category must be an array'
             })
         })
         return validateMealSchema.validate(request.body, {abortEarly: false});

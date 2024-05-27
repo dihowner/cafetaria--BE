@@ -12,7 +12,7 @@ export default class MealService {
     static async createMeal(vendorId, mealProperties) {
         try {
             const {
-                name, description, is_available, unit_price, packaging, image, category
+                name, description, is_available, unit_price, packaging, image
             } = mealProperties;
 
             const isMealExist = await this.getOne({vendor: vendorId, name: name});
@@ -35,8 +35,7 @@ export default class MealService {
                 isAvailable: is_available,
                 unitPrice: unit_price,
                 packaging: parsedPackaging,
-                image: uploadLocalCloud,
-                category: category
+                image: uploadLocalCloud
             })
             
             const saveMeal = await mealData.save();

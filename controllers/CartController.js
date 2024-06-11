@@ -7,6 +7,7 @@ const paymentMethod = ['card', 'bank_transfer']
 
 export default class CartController {
     static async createCart(request, response) {
+        console.log('body', request.body)
         try {
             const {
                 body : { cartId, meal_id, submeal_id, packaging, quantity }

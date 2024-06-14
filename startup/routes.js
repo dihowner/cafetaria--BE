@@ -27,7 +27,7 @@ const routeApp = function (app) {
 	app.use(bodyParser.json())
 	app.use(bodyParser.urlencoded({ extended: true }));
 	app.use(cors({
-        origin: 'http://localhost:5173',
+        origin: ['http://localhost:5173', 'https://cafeterian-new.vercel.app'],
         credentials: true
     }))
 	app.use(helmet())
